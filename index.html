@@ -817,7 +817,10 @@
             if (!e) return '無';
             if (accountId) {
                 const parts = e.split('@');
-                if (parts.length === 2 && parts[0].toLowerCase() === accountId.toLowerCase()) return e;
+                // --- 修正：將 accountId 轉為字串再進行比較 ---
+                const idStr = String(accountId).toLowerCase(); // 修正這裡
+                
+                if (parts.length === 2 && parts[0].toLowerCase() === idStr) return e;
             }
             const parts = e.split('@');
             if (parts.length === 2) {
@@ -827,6 +830,7 @@
             }
             return e;
         }
+
 
         function maskName(n) { 
             if (!n || n.length < 1) return '';
