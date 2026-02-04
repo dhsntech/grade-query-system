@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活動/成績認證查詢系統</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 美學與變數定義 --- */
+        :root {
+            /* 核心色系 */
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-light: #eff6ff;
+            
+            --success: #10b981;
+            --success-hover: #059669;
+            --success-light: #ecfdf5;
+
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --danger-light: #fef2f2;
+
+            --warning: #f59e0b;
+            --warning-hover: #d97706;
+            
+            --info: #6366f1;
+            --info-hover: #4f46e5;
+
+            /* 中性色 */
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            
+            /* 間距與圓角 */
+            --radius-sm: 6px;
+            --radius-md: 12px; 
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
+        
+        /* Body 排版 */
+        body { 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            line-height: 1.6; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0;
+        }
+        
+        /* 容器 */
+        #app-container { 
+            max-width: 1440px; 
+            width: 100%; 
+            padding: 20px; 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        /* 標題 */
+        h1 { text-align: center; color: var(--text-main); margin-bottom: 30px; font-weight: 700; letter-spacing: -0.5px; }
+        h2 { font-size: 1.4em; font-weight: 600; margin-bottom: 15px; color: var(--text-main); }
+        h3 { font-size: 1.1em; font-weight: 600; margin-bottom: 12px; color: var(--text-main); }
+
+        /* 卡片通用樣式 */
+        .card { 
+            background-color: var(--bg-card); border-radius: var(--radius-md); 
+            box-shadow: var(--shadow-sm); padding: 30px; margin-bottom: 0; 
+            border: 1px solid transparent; transition: box-shadow 0.3s ease;
+            width: 100%;
+        }
+        .card:hover { box-shadow: var(--shadow-md); }
+
+        /* 表單元素 */
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9em; color: var(--text-secondary); }
+        .input-group textarea, .input-group input, .input-group select {
+            width: 100%; padding: 10px 14px; 
+            border: 1px solid var(--border); border-radius: var(--radius-sm); 
+            font-size: 1em; background: #fff; color: var(--text-main);
+            transition: all 0.2s;
+        }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus { 
+            border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-light); 
+        }
+        
+        /* 按鈕系統 */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 8px 16px; border: none; border-radius: var(--radius-sm); 
+            font-size: 0.9em; font-weight: 500; cursor: pointer; 
+            transition: all 0.2s ease; text-decoration: none; line-height: 1.5;
+        }
+        .btn:active { transform: scale(0.98); }
+        
+        /* 顏色變體 */
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        
+        .btn-secondary { background-color: white; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-secondary:hover { background-color: var(--bg-body); border-color: #cbd5e1; }
+        
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-success:hover { background-color: var(--success-hover); }
+        
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+
+        /* 小尺寸按鈕 */
+        .btn-small { padding: 5px 10px; font-size: 0.85em; border-radius: 4px; }
+
+        /* 按鈕群組與間距 */
+        .button-group, .action-btn-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        
+        /* 隱藏類 */
+        .hidden { display: none !important; }
+
+        /* 管理介面標籤頁 */
+        .admin-tabs { display: flex; background: var(--bg-body); padding: 4px; border-radius: var(--radius-sm); width: fit-content; }
+        .tab-btn {
+            padding: 8px 20px; cursor: pointer; border: none; background: transparent; 
+            font-size: 0.9em; font-weight: 600; color: var(--text-secondary); border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); font-weight: 600; }
+
+        /* 表格優化 */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; overflow: hidden; border-radius: var(--radius-sm); }
+        .data-table th { 
+            background-color: #f8fafc; color: var(--text-secondary); font-weight: 600; font-size: 0.9em; 
+            text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); 
+        }
+        .data-table td { 
+            padding: 12px 16px; border-bottom: 1px solid var(--border); 
+            color: var(--text-main); font-size: 0.95em; 
+        }
+        .data-table tbody tr:last-child td { border-bottom: none; }
+        .data-table tbody tr:hover { background-color: #fcfcfc; }
+
+        /* 狀態標籤 */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.8em; font-weight: 600; }
+        .status-已認證 { background-color: var(--success-light); color: var(--success); }
+        .status-審核中, .status-認證中 { background-color: var(--primary-light); color: var(--primary); }
+        .status-認證失敗 { background-color: var(--danger-light); color: var(--danger); }
+        .status-未完成 { background-color: #f1f5f9; color: var(--text-secondary); }
+        .team-badge { background-color: var(--info); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; margin-right: 8px; }
+        .type-badge-group { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; margin-right: 4px; }
+        .type-personal { background-color: #e0e7ff; color: #4338ca; }
+        .type-team { background-color: #dbeafe; color: #1e40af; }
+
+        /* 管理介面佈局 */
+        .admin-layout { display: grid; grid-template-columns: 480px 1fr; gap: 24px; align-items: start; }
+        @media (max-width: 1024px) { .admin-layout { grid-template-columns: 1fr; } }
+
+        .sidebar { background: white; padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); min-height: 400px; border: 1px solid var(--border); }
+        .list-container { background: white; padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); min-height: 500px; border: 1px solid var(--border); }
+
+        .list-search { 
+            width: 100%; margin-bottom: 10px; padding: 8px 12px; 
+            border: 1px solid var(--border); border-radius: var(--radius-sm); 
+            background-color: #f8fafc; color: var(--text-main);
+            font-size: 0.9em;
+        }
+        .list-search::placeholder { color: #94a3b8; }
+
+        .stat-box { background: var(--primary-light); padding: 15px; border-radius: var(--radius-sm); margin-bottom: 10px; text-align: center; border: 1px solid #dbeafe; }
+        .stat-num { font-size: 1.8em; font-weight: 700; color: var(--primary); display: block; }
+        .stat-label { font-size: 0.85em; color: var(--text-main); }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: #fff; padding: 30px; border-radius: var(--radius-md); width: 90%; max-width: 550px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); position: relative;
+            animation: modalFadeIn 0.2s ease-out; max-height: 90vh; display: flex; flex-direction: column;
+        }
+        .modal-body { overflow-y: auto; margin: 20px 0; padding: 0; background: transparent; border: none; flex-grow: 1; }
+        .modal-scroll { overflow-y: auto; padding-right: 5px; }
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; transition: 0.2s; }
+        .close-modal:hover { color: var(--text-main); }
+
+        .comment { padding: 14px; border-radius: var(--radius-sm); font-size: 0.95em; margin-bottom: 10px; animation: fadeIn 0.3s; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .comment-student { background-color: white; border: 1px solid var(--border); align-self: flex-start; max-width: 85%; margin-right: auto; }
+        .comment-teacher { background-color: var(--primary-light); border: 1px solid var(--primary); color: var(--primary-dark); align-self: flex-end; max-width: 85%; text-align: left; margin-left: auto; }
+        .comment-recalled { background: repeating-linear-gradient(45deg, #f1f5f9, #f1f5f9 10px, #fff 10px, #fff 20px); border: 1px dashed #cbd5e1; text-align: center; font-style: italic; color: #94a3b8; width: 100%; max-width: 100%; align-self: center; }
+
+        .task-admin-container { margin-bottom:10px; max-height: 250px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-sm); }
+
+        .admin-table-inner { width:100%; border-collapse: collapse; font-size: 0.9em; }
+        .admin-table-inner thead { background:#f8fafc; position:sticky; top:0; z-index:10; }
+        .admin-table-inner th { padding:8px 6px; font-weight:600; font-size:0.8em; color:var(--text-secondary); border-bottom:1px solid var(--border); white-space: nowrap;}
+        .admin-table-inner td { padding:8px 6px; border-bottom:1px solid var(--border); vertical-align: middle; }
+
+        .preview-box { background: #1e293b; color: #a5b4fc; padding: 15px; border-radius: var(--radius-sm); font-family: monospace; font-size: 0.9em; white-space: pre-wrap; margin-top: 10px; border: 1px solid #334155; }
+        .rule-help { background:#eff6ff; padding:15px; font-size:0.85em; border:1px solid #dbeafe; border-radius:var(--radius-sm); margin-bottom:15px; color:#475569;}
+        .rule-help code { background:#e0e7ff; padding:2px 6px; border-radius:4px; color:#4338ca; font-family: monospace; }
+
+        .team-list-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+        .team-list-item:last-child { border-bottom: none; }
+        .team-list-item:hover { background-color: #f8fafc; }
+
+        .batch-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .batch-table th { background: #f8fafc; color: var(--text-secondary); font-weight: 600; padding: 10px; text-align: left; border-bottom: 2px solid var(--border); }
+        .batch-table td { padding: 8px; border-bottom: 1px solid var(--border); cursor: text; }
+        .batch-table input { width: 100%; border: 1px solid transparent; background: transparent; padding: 6px; font-size: inherit; border-radius: 4px; transition: 0.2s; cursor: text; }
+        .batch-table input:hover { border-color: #cbd5e1; background: #fff; }
+        .batch-table input:focus { border-color: var(--primary); background: white; outline: none; cursor: text;}
+        
+        /* Toast 通知 */
+        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { 
+            padding: 12px 20px; background: white; border-radius: var(--radius-sm); 
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); 
+            animation: slideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            min-width: 280px; display: flex; align-items: center; font-weight: 500;
+            border-left: 4px solid var(--primary);
+        }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+        
+        /* 載入動畫與遮罩 */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9); z-index: 20000;
+            display: none; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* 動畫 */
+        @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Confirm Dialog */
+        #confirm-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10001; display: none; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .confirm-box { background: #fff; padding: 32px; border-radius: var(--radius-md); text-align: center; min-width: 320px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+    </style>
+</head>
+<body>
+
+    <!-- 載入中遮罩 -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p style="margin-top:15px; color:var(--text-secondary); font-weight:600;">同步資料庫中，請稍候...</p>
+    </div>
+
+    <div id="app-container">
+        <h1>活動/成績認證查詢系統</h1>
+
+        <!-- Toast 通知區 -->
+        <div id="toast-container"></div>
+        <!-- 確認對話框區 -->
+        <div id="confirm-container"></div>
+
+        <!-- 1. 學生登入 -->
+        <div id="login-container" class="card" style="max-width: 480px; margin: 40px auto; padding: 40px;">
+            <h2 style="text-align:center; margin-bottom:30px;">成績查詢登入</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <label>學校名稱</label>
+                    <input type="text" id="school" value="永靖高工" required>
+                </div>
+                <div class="input-group">
+                    <label>班級</label>
+                    <input type="text" id="class" value="資訊二" required>
+                </div>
+                <div class="input-group">
+                    <label>學號</label>
+                    <input type="text" id="account" placeholder="請輸入學號" required>
+                </div>
+                <div class="input-group">
+                    <label>密碼 (登入用，無法修改)</label>
+                    <input type="password" id="password" placeholder="輸入查詢密碼" required>
+                </div>
+                <div class="button-group wide" style="margin-top:30px; flex-direction:column;">
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:12px 0;">登入查詢</button>
+                    <button type="button" class="btn btn-secondary" style="width:100%;" onclick="window.showAdminLogin()">我是教師</button>
+                </div>
+                <div id="login-error" class="hidden" style="color: var(--danger); margin-top: 20px; font-weight: 600; text-align: center; padding: 10px; background: var(--danger-light); border-radius: var(--radius-sm);"></div>
+            </form>
+        </div>
+
+        <!-- 2. 教師登入 -->
+        <div id="admin-login-container" class="card hidden" style="max-width: 400px; margin: 40px auto; padding: 40px;">
+            <h2 style="text-align:center; margin-bottom:30px;">教師管理員登入</h2>
+            <form id="admin-login-form">
+                <div class="input-group">
+                    <label>管理密碼</label>
+                    <input type="password" id="admin-password" required>
+                </div>
+                <div class="button-group wide" style="margin-top:30px; flex-direction:column;">
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:12px 0;">登入管理</button>
+                    <button type="button" class="btn btn-secondary" style="width:100%;" onclick="window.showStudentLogin()">返回</button>
+                </div>
+                <div id="admin-login-error" class="hidden" style="color: var(--danger); margin-top: 20px; font-weight: 600; text-align: center; padding: 10px; background: var(--danger-light); border-radius: var(--radius-sm);"></div>
+            </form>
+        </div>
+
+        <!-- 3. 學生結果頁面 -->
+        <div id="result-container" class="hidden">
+            <div class="card" style="max-width: 800px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid var(--border);">
+                    <h3>學生基本資料</h3>
+                    <button class="btn btn-secondary" onclick="window.logout()">登出</button>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <p><label style="color:var(--text-secondary); font-size:0.9em;">學號：</label><span id="result-account"></span></p>
+                    <p><label style="color:var(--text-secondary); font-size:0.9em;">姓名：</label><span id="result-name"></span></p>
+                    <p><label style="color:var(--text-secondary); font-size:0.9em;">學校：</label><span id="result-school"></span></p>
+                    <p><label style="color:var(--text-secondary); font-size:0.9em;">班級：</label><span id="result-class"></span></p>
+                    <p><label style="color:var(--text-secondary); font-size:0.9em;">電子郵件：</label><span id="result-email"></span></p>
+                </div>
+            </div>
+            
+            <div class="card" style="max-width: 1000px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; padding-bottom:15px; border-bottom:1px solid var(--border);">
+                    <h2>學期成績項目</h2>
+                    <button class="btn btn-info" onclick="window.openTeamJoinModal()">查看/加入團隊活動</button>
+                </div>
+                <table id="tasks-table-student" class="data-table">
+                    <thead><tr><th>項目名稱 (類型)</th><th>狀態</th><th style="text-align:right;">操作</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. 教師管理介面 -->
+        <div id="admin-container" class="hidden">
+            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:15px;">
+                <div class="admin-tabs">
+                    <button class="tab-btn active" onclick="window.switchAdminTab('student')">學生資料管理</button>
+                    <button class="tab-btn" onclick="window.switchAdminTab('team')">團隊活動</button>
+                    <button class="tab-btn" onclick="window.switchAdminTab('overview')">認證總覽</button>
+                    <button class="tab-btn" onclick="window.switchAdminTab('batch')">批量新增</button>
+                </div>
+                <div class="action-btn-group">
+                    <button class="btn btn-secondary btn-small" onclick="window.adminLogout()">登出教師</button>
+                    <button class="btn btn-success btn-small" onclick="window.exportData()">匯出本地備份</button>
+                </div>
+            </header>
+            
+            <div class="admin-layout">
+                <!-- 左側邊欄 -->
+                <div class="sidebar">
+                    
+                    <!-- 選項卡 1: 學生管理面板 -->
+                    <div id="tab-student-action">
+                        <div id="admin-welcome-panel">
+                            <h3>管理選單</h3>
+                            <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
+                                <button class="btn btn-warning" style="width:100%; justify-content: flex-start;" onclick="window.showStudentForm('new')">➕ 新增單一學生</button>
+                                <button class="btn btn-info" style="width:100%; justify-content: flex-start;" onclick="window.openTeamModal(false)">➕ 新增團隊活動</button>
+                            </div>
+                            <div style="margin-top:30px; padding:20px; background:#f8fafc; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                                <h4 style="margin-bottom:10px; font-size:0.9em; color:var(--text-secondary);">Google Sheet 連線狀態</h4>
+                                <div id="sync-status" style="font-size:0.85em; color:var(--success); font-weight:600;">檢查中...</div>
+                            </div>
+                        </div>
+
+                        <div id="student-form-panel" class="hidden">
+                            <h3>編輯/新增學生</h3>
+                            <form id="student-form" style="margin-top:20px;">
+                                <div class="input-group">
+                                    <label>學號</label>
+                                    <input type="text" id="admin-account" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>姓名</label>
+                                    <input type="text" id="admin-name" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>學校</label>
+                                    <input type="text" id="admin-school" value="永靖高工" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>班級</label>
+                                    <input type="text" id="admin-class" value="資訊二" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>Email</label>
+                                    <input type="email" id="admin-email">
+                                </div>
+                                
+                                <h4 style="margin:20px 0 10px 0; color:var(--text-main); font-size:0.95em;">個人項目列表</h4>
+                                <div class="task-admin-container">
+                                    <table id="tasks-table-admin" class="admin-table-inner">
+                                        <thead>
+                                            <tr><th style="text-align:left; width: 40%;">名稱</th><th style="text-align:left; width: 25%;">狀態</th><th style="text-align:center; width: 25%;">留言</th><th style="text-align:center; width: 10%;"></th></tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-small" style="margin-top:5px;" onclick="window.addTaskRow()">+ 新增個人項目</button>
+                                
+                                <div class="action-btn-group" style="margin-top:24px; border-top:1px solid var(--border); padding-top:16px;">
+                                    <button type="submit" id="submit-student-btn" class="btn btn-primary">儲存變更</button>
+                                    <button type="button" id="switch-to-new-student-btn" class="btn btn-success hidden" onclick="window.switchToNewStudentMode(true)">切換至新增</button>
+                                    <button type="button" class="btn btn-secondary" onclick="window.showWelcomePanel()">取消</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 選項卡 2: 團隊操作面板 -->
+                    <div id="tab-team-action" class="hidden">
+                        <h3>團隊活動操作</h3>
+                        <button class="btn btn-success" style="width:100%; margin-bottom:20px;" onclick="window.openTeamModal(false)">建立新團隊活動</button>
+                        
+                        <div style="background:var(--primary-light); padding:20px; border-radius:var(--radius-sm); border:1px solid #dbeafe; color:var(--primary);">
+                            <h4 style="margin-bottom:10px; font-size:0.95em;">功能說明</h4>
+                            <ul style="padding-left:20px; line-height: ChromeVoxOnSpeak; font-size:0.9em;">
+                                <li>團隊活動允許多位學生共同參與同一個任務。</li>
+                                <li>開放加入：學生可在首頁自行點擊加入。</li>
+                                <li>限制加入：僅能由教師在此手動輸入學號新增成員。</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 選項卡 3: 認證總覽面板 -->
+                    <div id="tab-overview-action" class="hidden">
+                        <h3>認證統計與過濾</h3>
+                        <div style="margin-top:20px;">
+                            <div class="stat-box">
+                                <span class="stat-num" id="filtered-count">0</span>
+                                <span class="stat-label">符合篩選條件項目</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div class="stat-box" style="background:var(--success-light); border-color: #d1fae5;">
+                                    <span class="stat-num" style="color:var(--success);" id="filtered-certified">0</span>
+                                    <span class="stat-label">已認證</span>
+                                </div>
+                                <div class="stat-box" style="background:var(--danger-light); border-color: #fee2e2;">
+                                    <span class="stat-num" style="color:var(--danger);" id="filtered-failed">0</span>
+                                    <span class="stat-label">待處理/失敗</span>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top:20px; padding:15px; background:#f1f5f9; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                                <h4 style="font-size:0.9em; margin-bottom:10px; color:var(--text-main);">篩選器</h4>
+                                
+                                <div class="input-group">
+                                    <label>類型</label>
+                                    <select id="overview-type-filter" class="list-search" onchange="renderGlobalList()">
+                                        <option value="all">全部 (個人 + 團隊)</option>
+                                        <option value="personal">僅顯示 個人項目</option>
+                                        <option value="team">僅顯示 團隊活動</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-group">
+                                    <label>狀態</label>
+                                    <select id="overview-status-filter" class="list-search" onchange="renderGlobalList()">
+                                        <option value="all">全部狀態</option>
+                                        <option value="todo">待處理 (未完成 / 失敗 / 審核中)</option>
+                                        <option value="certified">已認證</option>
+                                        <option value="failed">認證失敗</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 選項卡 4: 批量操作面板 -->
+                    <div id="tab-batch-action" class="hidden">
+                        <h3>快速批次新增</h3>
+                        <div style="background:#f1f5f9; padding:20px; border-radius:var(--radius-sm); border:1px solid #e2e8f0; color:var(--text-secondary); margin-bottom:20px; font-size:0.9em;">
+                            此功能使用規則生成器自動產生學號與帳號，適用於大量建立。
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;" onclick="window.openBatchModal()">開啟設定視窗</button>
+                    </div>
+
+                </div>
+
+                <!-- 右側列表區 -->
+                <div class="list-container">
+                    <h3 id="list-title" style="margin-bottom:16px;">學生列表</h3>
+                    
+                    <!-- 認證總覽專用搜尋/過濾 -->
+                    <div id="overview-search-container" class="hidden">
+                        <label style="font-size:0.85em; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">關鍵字搜尋 (名稱 / 學生)</label>
+                        <input type="text" id="overview-text-search" class="list-search" placeholder="輸入關鍵字進行搜尋..." oninput="renderGlobalList()">
+                    </div>
+                    
+                    <!-- 學生/團隊列表搜尋 -->
+                    <input type="text" id="student-search" class="list-search" placeholder="🔍 搜尋學號或姓名..." onkeyup="window.filterStudentList()">
+
+                    <div style="overflow-y:auto; max-height:600px; border:1px solid var(--border); border-radius:var(--radius-sm);">
+                        <table id="main-table-display" class="data-table" style="margin:0; border:none;"></table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 留言 Modal -->
+    <div id="comment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="window.closeModal('comment-modal')">&times;</span>
+            <h3 id="modal-title">留言板</h3>
+            <div id="comment-history" class="modal-body"></div>
+            <div id="new-comment-area" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; background:#f8fafc; padding:15px; border-radius:var(--radius-sm);">
+                <textarea id="comment-input" rows="3" style="width:100%; margin-bottom:10px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px;" placeholder="輸入留言..."></textarea>
+                <button id="submit-comment-btn" class="btn btn-primary" style="width:100%;">送出留言</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 團隊編輯/新增 Modal -->
+    <div id="team-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="window.closeModal('team-modal')">&times;</span>
+            <h3 id="team-modal-title">管理團隊活動</h3>
+            <div class="modal-scroll">
+                <form id="team-form">
+                    <input type="hidden" id="team-edit-id">
+                    <div class="input-group">
+                        <label>活動名稱</label>
+                        <input type="text" id="team-name" required>
+                    </div>
+                    <div class="input-group">
+                        <label>加入模式</label>
+                        <select id="team-join-mode">
+                            <option value="open">允許加入 (學生可自行加入)</option>
+                            <option value="restricted">僅限被動加入 (僅教員可拉人)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>目前狀態</label>
+                        <select id="team-status">
+                            <option value="未完成">未完成</option>
+                            <option value="審核中">審核中</option>
+                            <option value="認證失敗">認證失敗</option>
+                            <option value="已認證">已認證</option>
+                        </select>
+                    </div>
+                    
+                    <div class="action-btn-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:20px;">
+                        <button type="submit" class="btn btn-primary">儲存團隊設定</button>
+                        <button type="button" class="btn btn-danger hidden" id="delete-team-btn">刪除此活動</button>
+                    </div>
+                </form>
+
+                <hr style="margin:25px 0; border:0; border-top:1px dashed var(--border);">
+
+                <h4>成員管理</h4>
+                <p style="font-size:0.9em; color:var(--text-secondary); margin-bottom:10px;">輸入完整學號並按新增按鈕。</p>
+                <div class="action-btn-group">
+                    <input type="text" id="team-add-member-input" placeholder="輸入學號" style="padding:8px;">
+                    <button class="btn btn-info" onclick="window.addMemberToTeam()">新增成員</button>
+                </div>
+                <div id="team-members-list" style="margin-top:15px; max-height:250px; overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 學生加入團隊 Modal -->
+    <div id="team-join-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="window.closeModal('team-join-modal')">&times;</span>
+            <h3>可加入的團隊活動</h3>
+            <div class="modal-body">
+                <div id="available-teams-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量新增 Modal (規則設定) -->
+    <div id="batch-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="window.closeModal('batch-modal')">&times;</span>
+            <h3>批次新增規則設定</h3>
+            <div class="modal-scroll">
+                <div class="rule-help">
+                    <strong>可用參數說明：</strong><br>
+                    <code>[number]</code> : 連續號碼。例如 <code>[number]{num=2}</code> 產生 01, 02<br>
+                    <code>[year]</code> : 年份。<code>[year]{national=roc}</code> = 民國年<br>
+                    <code>[date]</code> : 日期。<code>[date]{yyyymmdd}</code> = 20260203<br>
+                    <code>[time]</code> : 時間。<code>[time]{format=hhmm}</code> = 1330<br>
+                    <code>[rand]</code> : 亂數。<code>[rand]{num=1}</code> = 0-9<br>
+                    <code>$text$</code> : 固定文字前綴
+                </div>
+
+                <div class="input-group">
+                    <label>生成數量 (起始 ~ 結束)</label>
+                    <div class="action-btn-group">
+                        <input type="number" id="batch-start" value="1" placeholder="起始" oninput="window.updatePreview()">
+                        <input type="number" id="batch-end" value="10" placeholder="結束" oninput="window.updatePreview()">
+                    </div>
+                </div>
+
+                <hr style="margin:20px 0; border:0; border-top:1px dashed var(--border);">
+
+                <div class="input-group">
+                    <label>學校預設</label>
+                    <input type="text" id="batch-school" value="永靖高工">
+                </div>
+                <div class="input-group">
+                    <label>班級預設</label>
+                    <input type="text" id="batch-class" value="資訊二">
+                </div>
+                
+                <div class="input-group">
+                    <label>學號生成規則</label>
+                    <textarea id="batch-rule-account" rows="2" placeholder="例如: [time][date]{yyyymmdd}" oninput="window.updatePreview()">[time][date]{yyyymmdd}</textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Email 規則</label>
+                    <textarea id="batch-rule-email" rows="2" placeholder="例如: [student_num]@school.edu.tw" oninput="window.updatePreview()">[student_num]@stu.yjvs.chc.edu.tw</textarea>
+                </div>
+
+                <h4 style="margin:15px 0 5px 0; font-size:0.9em; color:var(--text-secondary);">即時預覽 (前3筆)</h4>
+                <div class="preview-box" id="batch-preview">等待輸入...</div>
+
+                <div class="action-btn-group" style="margin-top:20px;">
+                    <button class="btn btn-primary" onclick="window.prepareBatchReview()">下一步：預覽並生成</button>
+                    <button class="btn btn-secondary" onclick="window.closeModal('batch-modal')">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量新增 Modal (審核與編輯) -->
+    <div id="batch-review-modal" class="modal">
+        <div class="modal-content" style="max-width:800px;">
+            <span class="close-modal" onclick="window.closeModal('batch-review-modal')">&times;</span>
+            <h3>確認新增資料 (Step 2/2)</h3>
+            <p style="color:var(--text-secondary); margin-bottom:15px;">請確認資料。您可以直接修改表格內容。</p>
+            
+            <div class="action-btn-group" style="background:#f8fafc; padding:15px; border-radius:var(--radius-sm); margin-bottom:15px;">
+                <div style="flex:1;"><label style="font-size:0.8em; color:var(--text-secondary); display:block; margin-bottom:4px;">全校統一學校</label><input type="text" id="review-global-school" placeholder="輸入以更新全部..."></div>
+                <div style="flex:1;"><label style="font-size:0.8em; color:var(--text-secondary); display:block; margin-bottom:4px;">全班統一班級</label><input type="text" id="review-global-class" placeholder="輸入以更新全部..."></div>
+            </div>
+
+            <div style="border:1px solid var(--border); border-radius:var(--radius-sm); max-height:400px; overflow-y:auto;">
+                <table class="batch-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">學校</th><th style="width: 15%;">班級</th><th style="width: 20%;">學號</th><th style="width: 15%;">姓名</th><th style="width: 25%;">Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="review-table-body"></tbody>
+                </table>
+            </div>
+
+            <div class="action-btn-group" style="margin-top:20px; justify-content: flex-end;">
+                <button class="btn btn-danger" onclick="window.closeModal('batch-review-modal')">放棄</button>
+                <button class="btn btn-success" onclick="window.finalizeBatchAdd()">確認生成資料</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // --- 設定區 ---
+        // 您的 Google Apps Script Web App URL
+        let GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdIAiN7xdtV9oaRCuY2pEXMQPNl2T8yeM0tuYA4d2xOAQ9EdAjeRKInHfTwxhTRqU-/exec";
+
+        const TEACHER_PASSWORD = 'Teacher@admin';
+        const TEAMS_KEY = 'certSystem_teams';
+        const STUDENTS_KEY = 'certSystem_students';
+        
+        // 資料結構
+        let students = {}; 
+        let teams = {};
+        let currentMode = 'student'; 
+        let editingStudentId = null;
+        let editingTeamId = null;
+        let viewingAccountId = null; 
+        let viewingTaskId = null;
+        let viewingIsTeam = false; 
+        let nextTaskId = 100; 
+        let pendingBatchList = []; 
+        let isSyncing = false;
+
+        // --- Google Sheet 同步邏輯 (修正 CORS 版本) ---
+
+        async function fetchDataFromSheet() {
+            if (!GOOGLE_SCRIPT_URL) {
+                const localS = localStorage.getItem(STUDENTS_KEY);
+                const localT = localStorage.getItem(TEAMS_KEY);
+                if (localS && localT) {
+                    students = JSON.parse(localS);
+                    teams = JSON.parse(localT);
+                    showToast('已載入本地離線資料 (未設定 Google Sheet)', 'info');
+                } else {
+                    students = {
+                         'A123456789': { account: 'A123456789', name: '林書恩', school: '永靖高工', class: '資訊二', email: 'A123456789@stu.yjvs.chc.edu.tw', joinedTeams: [], tasks: [] }
+                    };
+                    teams = {};
+                    showToast('無資料庫連線，系統為離線模式', 'warning');
+                }
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const payload = { action: 'getData' };
+                const body = new URLSearchParams();
+                body.append('data', JSON.stringify(payload));
+
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: body
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const text = await response.text();
+                // 處理可能出現的 Google JSON 包裝格式或直接 JSON
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    // 如果 GAS 返回的是純字串，可能需要特殊處理，但通常上述格式安全
+                    throw new Error('解析 JSON 失敗: ' + text.substring(0,100));
+                }
+                
+                if (data.result === 'success') {
+                    students = data.students || {};
+                    teams = data.teams || {};
+                    localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
+                    localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+                    document.getElementById('sync-status').innerHTML = '✔ 已連線並同步';
+                    document.getElementById('sync-status').style.color = 'var(--success)';
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Sheet Sync Error:', error);
+                showToast('資料庫同步失敗，使用本地快取資料', 'error');
+                document.getElementById('sync-status').innerHTML = '❌ 同步失敗 (離線模式)';
+                document.getElementById('sync-status').style.color = 'var(--danger)';
+                
+                const localS = localStorage.getItem(STUDENTS_KEY);
+                const localT = localStorage.getItem(TEAMS_KEY);
+                if (localS && localT) {
+                    students = JSON.parse(localS);
+                    teams = JSON.parse(localT);
+                }
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function pushDataToSheet() {
+            if (!GOOGLE_SCRIPT_URL) {
+                localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
+                localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+                return; 
+            }
+
+            if (isSyncing) return; 
+            isSyncing = true;
+            
+            localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
+            localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+
+            try {
+                const payload = { 
+                    action: 'saveData',
+                    students: students,
+                    teams: teams
+                };
+                
+                const body = new URLSearchParams();
+                body.append('data', JSON.stringify(payload));
+
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: body
+                });
+
+                const text = await response.text();
+                const data = JSON.parse(text || '{}');
+                
+                if (data.result !== 'success') {
+                    throw new Error(data.error || 'Unknown Error');
+                }
+            } catch (error) {
+                console.error('Save Error:', error);
+                throw error; // Re-throw to caller
+            } finally {
+                setTimeout(() => { isSyncing = false; }, 1000);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none';
+        }
+
+        // --- 工具函式 ---
+        function generateTeamId() { return 'TEAM_' + new Date().getTime(); }
+
+        // 修正處理：強制轉為字串，解決 Number.toLowerCase 錯誤
+        function maskEmail(e, accountId) { 
+            if (!e) return '無';
+            if (accountId) {
+                const parts = e.split('@');
+                const idStr = String(accountId).toLowerCase(); // 修正處理
+                
+                if (parts.length === 2 && parts[0].toLowerCase() === idStr) return e;
+            }
+            const parts = e.split('@');
+            if (parts.length === 2) {
+                const local = parts[0];
+                if (local.length > 2) return local[0] + '**@' + parts[1];
+                if (local.length > 0) return local[0] + '*@' + parts[1];
+            }
+            return e;
+        }
+
+        function maskName(n) { 
+            if (!n || n.length < 1) return '';
+            if (n.length <= 2) return n[0] + '*';
+            return n[0] + '*'.repeat(n.length - 2) + n[n.length - 1];
+        }
+
+        window.showToast = function(msg, type='info') {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            el.innerText = msg;
+            container.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+        }
+
+        window.showConfirmDialog = function(msg) {
+            return new Promise(resolve => {
+                const d = document.getElementById('confirm-container');
+                d.style.display = 'flex';
+                d.innerHTML = `<div class="confirm-box"><p style="margin-bottom:20px; color:var(--text-main); font-size:1.1em;">${msg}</p><div class="action-btn-group" style="justify-content:center;"><button class="btn btn-primary" style="width:80px;">確定</button> <button class="btn btn-secondary" style="width:80px;">取消</button></div></div>`;
+                d.querySelector('.btn-primary').onclick = () => { d.style.display='none'; resolve(true); };
+                d.querySelector('.btn-secondary').onclick = () => { d.style.display='none'; resolve(false); };
+            });
+        }
+
+        window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
+
+        window.hideAll = function() {
+            document.querySelectorAll('#login-container, #admin-login-container, #result-container, #admin-container').forEach(e => e.classList.add('hidden'));
+        }
+
+        window.showStudentLogin = function() {
+            currentMode = 'student';
+            window.hideAll();
+            document.getElementById('login-container').classList.remove('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+        }
+
+        window.showAdminLogin = function() {
+            window.hideAll();
+            document.getElementById('admin-login-container').classList.remove('hidden');
+            document.getElementById('admin-password').value = '';
+        }
+        
+        window.switchAdminTab = function(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.tab-btn[onclick="window.switchAdminTab('${tabName}')"]`);
+            if(activeBtn) activeBtn.classList.add('active');
+            
+            ['tab-student-action', 'tab-team-action', 'tab-overview-action', 'tab-batch-action'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(`tab-${tabName}-action`).classList.remove('hidden');
+
+            const listTitle = document.getElementById('list-title');
+            const studentSearch = document.getElementById('student-search');
+            const overviewSearch = document.getElementById('overview-search-container');
+
+            if(overviewSearch) overviewSearch.classList.add('hidden');
+            if(studentSearch) studentSearch.classList.remove('hidden');
+
+            if (tabName === 'student') {
+                listTitle.innerText = '學生列表';
+                renderStudentList();
+            } else if (tabName === 'team') {
+                listTitle.innerText = '團隊活動列表';
+                renderTeamList();
+            } else if (tabName === 'overview') {
+                listTitle.innerText = '全域認證列表';
+                if(overviewSearch) overviewSearch.classList.remove('hidden');
+                if(studentSearch) studentSearch.classList.add('hidden');
+                renderGlobalList();
+            } else if (tabName === 'batch') {
+                listTitle.innerText = '系統說明';
+                document.getElementById('main-table-display').innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-secondary);">請在左側面板操作</div>';
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const s = students[document.getElementById('account').value.trim()];
+            if (s && s.school === document.getElementById('school').value.trim() && s.class === document.getElementById('class').value.trim()) {
+                displayStudentResult(s);
+            } else {
+                const err = document.getElementById('login-error');
+                err.textContent = "資料錯誤";
+                err.classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (document.getElementById('admin-password').value === TEACHER_PASSWORD) {
+                currentMode = 'admin';
+                window.hideAll();
+                document.getElementById('admin-container').classList.remove('hidden');
+                window.switchAdminTab('student');
+                showWelcomePanel();
+            } else {
+                const err = document.getElementById('admin-login-error');
+                err.textContent = "密碼錯誤";
+                err.classList.remove('hidden');
+            }
+        });
+
+        function displayStudentResult(s) {
+            currentMode = 'student';
+            viewingAccountId = s.account; 
+            window.hideAll();
+            document.getElementById('result-container').classList.remove('hidden');
+            document.getElementById('result-account').textContent = s.account;
+            document.getElementById('result-name').textContent = maskName(s.name); 
+            document.getElementById('result-school').textContent = s.school;
+            document.getElementById('result-class').textContent = s.class;
+            document.getElementById('result-email').textContent = maskEmail(s.email, s.account);
+
+            const tbody = document.querySelector('#tasks-table-student tbody');
+            tbody.innerHTML = '';
+            
+            if (!s.tasks) s.tasks = [];
+            s.tasks.forEach(t => {
+                const tr = tbody.insertRow();
+                tr.innerHTML = `
+                    <td><div style="font-weight:500;">${t.name}</div></td>
+                    <td><span class="badge status-${t.status}">${t.status}</span></td>
+                    <td style="text-align:right;"></td>`;
+                const td = tr.cells[2];
+                const visibleCount = (t.comments || []).filter(c => !c.isRecalled).length;
+                let btns = `<span class="action-btn-group"><button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${s.account}', ${t.id}, 'student', false)">留言 (${visibleCount})</button>`;
+                if (t.status === '未完成' || t.status === '認證失敗') {
+                    btns += ` <button class="btn btn-primary btn-small" onclick="window.reqCert('${s.account}', ${t.id}, false)">請求認證</button>`;
+                } else if (t.status === '已認證') {
+                    btns += ` <button class="btn btn-warning btn-small" onclick="window.reqReCert('${s.account}', ${t.id}, false)">重新審核</button>`;
+                }
+                btns += `</span>`;
+                td.innerHTML = btns;
+            });
+
+            const myTeams = (s.joinedTeams || []).filter(tid => teams[tid]);
+            if (myTeams.length > 0) {
+                const sepRow = tbody.insertRow();
+                sepRow.innerHTML = `<td colspan="3" style="background:#f8fafc; text-align:center; color:var(--text-secondary); font-weight:600; padding:12px;">- 團隊活動 -</td>`;
+                myTeams.forEach(tid => {
+                    const t = teams[tid];
+                    const tr = tbody.insertRow();
+                    tr.innerHTML = `
+                        <td><div style="font-weight:500;"><span class="team-badge">團隊</span>${t.name}</div></td>
+                        <td><span class="badge status-${t.status}">${t.status}</span></td>
+                        <td style="text-align:right;"></td>`;
+                    const td = tr.cells[2];
+                    const visibleCount = (t.comments || []).filter(c => !c.isRecalled).length;
+                    let btns = `<span class="action-btn-group"><button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${tid}', 0, 'student', true)">留言 (${visibleCount})</button>`;
+                    if (t.status === '未完成' || t.status === '認證失敗') {
+                        btns += ` <button class="btn btn-primary btn-small" onclick="window.reqCert('${tid}', 0, true)">請求團隊認證</button>`;
+                    } else if (t.status === '已認證') {
+                        btns += ` <button class="btn btn-warning btn-small" onclick="window.reqReCert('${tid}', 0, true)">重新審核</button>`;
+                    }
+                    btns += `</span>`;
+                    td.innerHTML = btns;
+                });
+            }
+        }
+
+        window.logout = () => { window.showToast('已登出'); window.showStudentLogin(); }
+        window.adminLogout = () => { window.showToast('已登出'); window.showStudentLogin(); }
+
+        // 修正：加入 Loading 遮罩控制
+        window.reqCert = async function(id, tid, isTeam) {
+            if (await window.showConfirmDialog('確定申請認證？')) {
+                showLoading(true);
+                try {
+                    if (isTeam) { teams[id].status = '審核中'; } 
+                    else { students[id].tasks.find(t=>t.id==tid).status = '審核中'; }
+                    await pushDataToSheet();
+                    displayStudentResult(students[viewingAccountId]);
+                    window.showToast('已申請', 'success');
+                } catch (error) {
+                    console.error(error);
+                    window.showToast('連線失敗，請稍後再試', 'error');
+                } finally {
+                    showLoading(false);
+                }
+            }
+        }
+        window.reqReCert = async function(id, tid, isTeam) {
+            if (await window.showConfirmDialog('確定重新提交？')) {
+                showLoading(true);
+                try {
+                    if (isTeam) { teams[id].status = '審核中'; } 
+                    else { students[id].tasks.find(t=>t.id==tid).status = '審核中'; }
+                    await pushDataToSheet();
+                    displayStudentResult(students[viewingAccountId]);
+                    window.showToast('已重新提交', 'success');
+                } catch (error) {
+                    console.error(error);
+                    window.showToast('連線失敗，請稍後再試', 'error');
+                } finally {
+                    showLoading(false);
+                }
+            }
+        }
+
+        function renderStudentList() {
+            const table = document.getElementById('main-table-display');
+            const term = document.getElementById('student-search').value.toLowerCase();
+            table.innerHTML = `<thead><tr><th>學號</th><th>姓名</th> <th style="text-align:right; width:140px;">操作</th></tr></thead><tbody></tbody>`;
+            const tbody = table.querySelector('tbody');
+            Object.keys(students).sort().forEach(k => {
+                const s = students[k];
+                if (k.toLowerCase().includes(term) || s.name.toLowerCase().includes(term)) {
+                    const tr = tbody.insertRow();
+                    tr.insertCell().textContent = k;
+                    tr.insertCell().textContent = s.name;
+                    tr.insertCell().innerHTML = `
+                        <div class="action-btn-group" style="justify-content:flex-end;">
+                            <button class="btn btn-primary btn-small" onclick="window.editStudent('${k}')">編輯</button>
+                            <button class="btn btn-danger btn-small" onclick="window.delStudent('${k}')">刪除</button>
+                        </div>`;
+                }
+            });
+        }
+        window.filterStudentList = renderStudentList;
+
+        window.showWelcomePanel = async function() {
+            if (editingStudentId && await window.showConfirmDialog('未儲存，確定返回？')) {
+                editingStudentId = null;
+                document.getElementById('admin-welcome-panel').classList.remove('hidden');
+                document.getElementById('student-form-panel').classList.add('hidden');
+            } else if (!editingStudentId) {
+                document.getElementById('admin-welcome-panel').classList.remove('hidden');
+                document.getElementById('student-form-panel').classList.add('hidden');
+            }
+        }
+
+        window.showStudentForm = function(mode) {
+            document.getElementById('admin-welcome-panel').classList.add('hidden');
+            document.getElementById('student-form-panel').classList.remove('hidden');
+            if (mode === 'new') window.switchToNewStudentMode(false);
+        }
+
+        window.switchToNewStudentMode = async function(confirmIt = true) {
+            if (confirmIt && editingStudentId) { if (!await window.showConfirmDialog('確定切換？')) return; }
+            editingStudentId = null;
+            const form = document.getElementById('student-form');
+            if (form) form.reset();
+            document.getElementById('admin-school').value = '永靖高工';
+            document.getElementById('admin-class').value = '資訊二';
+            const tbody = document.querySelector('#tasks-table-admin tbody');
+            if (tbody) tbody.innerHTML = '';
+            
+            document.getElementById('submit-student-btn').innerText = '新增學生';
+            document.getElementById('submit-student-btn').className = 'btn btn-primary';
+            document.getElementById('switch-to-new-student-btn').classList.add('hidden');
+            document.getElementById('admin-account').readOnly = false;
+        }
+
+        window.editStudent = function(id) {
+            const s = students[id];
+            editingStudentId = id;
+            document.getElementById('admin-welcome-panel').classList.add('hidden');
+            document.getElementById('student-form-panel').classList.remove('hidden');
+            document.getElementById('submit-student-btn').innerText = '儲存變更';
+            document.getElementById('submit-student-btn').className = 'btn btn-success';
+            document.getElementById('switch-to-new-student-btn').classList.remove('hidden');
+            const form = document.getElementById('student-form');
+            document.getElementById('admin-account').value = s.account;
+            document.getElementById('admin-account').readOnly = true;
+            document.getElementById('admin-name').value = s.name;
+            document.getElementById('admin-school').value = s.school;
+            document.getElementById('admin-class').value = s.class;
+            document.getElementById('admin-email').value = s.email;
+            const tbody = document.querySelector('#tasks-table-admin tbody');
+            tbody.innerHTML = '';
+            (s.tasks || []).forEach(t => addTaskRow(t));
+        }
+
+        window.addTaskRow = function(task=null) {
+            const isNew = !task;
+            const tid = isNew ? nextTaskId++ : task.id;
+            const tbody = document.querySelector('#tasks-table-admin tbody');
+            const tr = tbody.insertRow();
+            tr.setAttribute('data-id', tid);
+            const name = task ? task.name : '';
+            const status = task ? task.status : '未完成';
+            const comments = task ? task.comments : [];
+            const commentCount = comments.filter(c=>!c.isRecalled).length;
+            
+            tr.innerHTML = `
+                <td><input type="text" class="task-name" value="${name}" placeholder="項目名稱" required style="border:none; background:transparent; font-weight:500; width:95%;"></td>
+                <td>
+                    <select class="task-status" style="width:95%; border:1px solid var(--border); border-radius:4px; font-size:0.8em;">
+                        <option value="未完成" ${status=='未完成'?'selected':''}>未完成</option>
+                        <option value="審核中" ${status=='審核中'?'selected':''}>審核中</option>
+                        <option value="認證失敗" ${status=='認證失敗'?'selected':''}>失敗</option>
+                        <option value="已認證" ${status=='已認證'?'selected':''}>已認證</option>
+                    </select>
+                </td>
+                <td style="text-align:center;"><button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${editingStudentId||''}', ${tid}, 'admin', false)" ${!editingStudentId?'disabled':''}>💬${commentCount}</button></td>
+                <td style="text-align:center; width:10px;"><button class="btn btn-danger btn-small" style="padding:2px 6px; font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>
+            `;
+        }
+
+        // 修正：加入 try...finally 確保遮罩關閉
+        document.getElementById('student-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading(true);
+            try {
+                const id = document.getElementById('admin-account').value.trim();
+                if (!editingStudentId && students[id]) { 
+                    window.showToast('學號重複', 'error'); 
+                    return; 
+                }
+                
+                const tasks = [];
+                const rows = document.querySelectorAll('#tasks-table-admin tbody tr');
+                rows.forEach(r => {
+                    const tid = parseInt(r.getAttribute('data-id'));
+                    const existingStudent = students[editingStudentId || id];
+                    const existingTask = existingStudent ? (existingStudent.tasks || []).find(x=>x.id==tid) : null;
+                    tasks.push({
+                        id: tid, name: r.querySelector('.task-name').value.trim(),
+                        status: r.querySelector('.task-status').value,
+                        teacherComment: existingTask ? existingTask.teacherComment : '無',
+                        comments: existingTask ? existingTask.comments : []
+                    });
+                });
+                
+                students[id] = {
+                    account: id, name: document.getElementById('admin-name').value.trim(),
+                    school: document.getElementById('admin-school').value.trim(),
+                    class: document.getElementById('admin-class').value.trim(),
+                    email: document.getElementById('admin-email').value.trim(), tasks: tasks,
+                    joinedTeams: (students[id] ? students[id].joinedTeams : [])
+                };
+                
+                await pushDataToSheet();
+                renderStudentList();
+                window.showToast('儲存成功', 'success');
+                if (!editingStudentId) window.switchToNewStudentMode(false); 
+            } catch (error) {
+                console.error("Save Error:", error);
+                window.showToast('發生錯誤，無法儲存', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // 修正：加入 try...finally
+        window.delStudent = async function(id) {
+            if (!await window.showConfirmDialog('確定刪除？')) return;
+            showLoading(true);
+            try {
+                (students[id].joinedTeams || []).forEach(tid => {
+                    if(teams[tid]) { teams[tid].members = teams[tid].members.filter(m => m !== id); }
+                });
+                delete students[id];
+                await pushDataToSheet();
+                renderStudentList();
+            } catch (error) {
+                console.error("Delete Error:", error);
+                window.showToast('刪除失敗', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderTeamList() {
+            const table = document.getElementById('main-table-display');
+            const keys = Object.keys(teams);
+            table.innerHTML = `<thead><tr><th>活動名稱</th><th>模式</th><th>成員</th><th style="text-align:right; width:160px;">操作</th></tr></thead><tbody></tbody>`;
+            const tbody = table.querySelector('tbody');
+            
+            if (keys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-secondary);">目前尚無團隊活動</td></tr>';
+                return;
+            }
+            keys.forEach(tid => {
+                const t = teams[tid];
+                const tr = tbody.insertRow();
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight:600; margin-bottom:4px;">${t.name}</div>
+                        <div style="font-size:0.8em; color:var(--text-secondary);">狀態: ${t.status}</div>
+                    </td>
+                    <td>${t.joinMode==='open'?'<span class="badge" style="background:#ecfdf5; color:#10b981;">開放</span>':'<span class="badge" style="background:#fff7ed; color:#f59e0b;">限制</span>'}</td>
+                    <td style="text-align:center; font-weight:600;">${(t.members||[]).length}</td>
+                    <td style="text-align:right;">
+                        <div class="action-btn-group" style="justify-content:flex-end;">
+                            <button class="btn btn-info btn-small" onclick="window.openCommentModal('${tid}', 0, 'admin', true)">💬 ${(t.comments||[]).filter(c=>!c.isRecalled).length}</button>
+                            <button class="btn btn-primary btn-small" onclick="window.openTeamModal('${tid}')">管理</button>
+                            <button class="btn btn-danger btn-small" onclick="window.delTeam('${tid}')">刪除</button>
+                        </div>
+                    </td>`;
+            });
+        }
+
+        window.openTeamModal = function(teamId) {
+            editingTeamId = teamId || null;
+            const modal = document.getElementById('team-modal');
+            modal.style.display = 'flex';
+            const form = document.getElementById('team-form');
+            const delBtn = document.getElementById('delete-team-btn');
+            
+            if (teamId) {
+                const t = teams[teamId];
+                document.getElementById('team-modal-title').innerText = `管理團隊: ${t.name}`;
+                document.getElementById('team-name').value = t.name;
+                document.getElementById('team-edit-id').value = t.id;
+                document.getElementById('team-join-mode').value = t.joinMode;
+                document.getElementById('team-status').value = t.status;
+                delBtn.classList.remove('hidden');
+                delBtn.onclick = async () => { await window.delTeam(teamId); window.closeModal('team-modal'); };
+            } else {
+                document.getElementById('team-modal-title').innerText = '新增團隊活動';
+                document.getElementById('team-edit-id').value = '';
+                document.getElementById('team-name').value = '';
+                document.getElementById('team-join-mode').value = 'open';
+                document.getElementById('team-status').value = '未完成';
+                delBtn.classList.add('hidden');
+            }
+            renderTeamMembers();
+        }
+
+        // 修正：加入 try...finally
+        document.getElementById('team-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading(true);
+            try {
+                const id = document.getElementById('team-edit-id').value || generateTeamId();
+                const isNew = !teams[id];
+                
+                teams[id] = {
+                    id: id, name: document.getElementById('team-name').value.trim(),
+                    status: document.getElementById('team-status').value, joinMode: document.getElementById('team-join-mode').value,
+                    members:isNew ? [] : teams[id].members, comments: isNew ? [] : teams[id].comments
+                };
+                await pushDataToSheet();
+                renderTeamList();
+                window.closeModal('team-modal');
+                window.showToast('已儲存', 'success');
+            } catch (error) {
+                console.error("Team Save Error:", error);
+                window.showToast('儲存失敗', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // 修正：加入 try...finally
+        window.delTeam = async function(id) {
+            if (await window.showConfirmDialog('確定刪除此活動？成員將會被移除。')) {
+                showLoading(true);
+                try {
+                    const t = teams[id];
+                    t.members.forEach(mId => {
+                        if (students[mId]) { students[mId].joinedTeams = students[mId].joinedTeams.filter(tid => tid !== id); }
+                    });
+                    delete teams[id];
+                    await pushDataToSheet();
+                    renderTeamList();
+                } catch (error) {
+                    console.error("Delete Team Error:", error);
+                    window.showToast('刪除失敗', 'error');
+                } finally {
+                    showLoading(false);
+                }
+            }
+        }
+
+        function renderTeamMembers() {
+            const list = document.getElementById('team-members-list');
+            list.innerHTML = '';
+            if (!editingTeamId) return;
+            const t = teams[editingTeamId];
+            (t.members || []).forEach(mid => {
+                const s = students[mid];
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.padding = '6px 0';
+                div.style.borderBottom = '1px solid var(--border)';
+                div.innerHTML = `<span style="font-size:0.9em;">${mid} <span style="color:#94a3b8; font-size:0.8em;">(${s ? s.name : '未知用戶'})</span></span><button class="btn btn-danger btn-small" style="padding:2px 8px; font-size:12px;" onclick="window.removeMember('${mid}')">移除</button>`;
+                list.appendChild(div);
+            });
+        }
+
+        // 修正：加入 try...finally
+        window.addMemberToTeam = async function() {
+            if (!editingTeamId) return;
+            const input = document.getElementById('team-add-member-input');
+            const mid = input.value.trim();
+            const t = teams[editingTeamId];
+            
+            if (!students[mid]) { window.showToast('學號不存在', 'error'); return; }
+            if ((t.members || []).includes(mid)) { window.showToast('已在團隊中', 'error'); return; }
+            
+            showLoading(true);
+            try {
+                if(!t.members) t.members = [];
+                t.members.push(mid);
+                if (!students[mid].joinedTeams) students[mid].joinedTeams = [];
+                students[mid].joinedTeams.push(editingTeamId);
+                await pushDataToSheet();
+                input.value = '';
+                renderTeamMembers();
+                renderTeamList();
+                window.showToast('成員已加入', 'success');
+            } catch (error) {
+                console.error("Add Member Error:", error);
+                window.showToast('新增失敗', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 修正：加入 try...finally
+        window.removeMember = async function(mid) {
+            if (!confirm(`確定移除 ${mid}?`)) return;
+            showLoading(true);
+            try {
+                const t = teams[editingTeamId];
+                t.members = t.members.filter(id => id !== mid);
+                if (students[mid]) { students[mid].joinedTeams = students[mid].joinedTeams.filter(tid => tid !== editingTeamId); }
+                await pushDataToSheet();
+                renderTeamMembers();
+                renderTeamList();
+            } catch (error) {
+                console.error("Remove Member Error:", error);
+                window.showToast('移除失敗', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        window.openTeamJoinModal = function() {
+            const modal = document.getElementById('team-join-modal');
+            const list = document.getElementById('available-teams-list');
+            list.innerHTML = '';
+            
+            const myId = viewingAccountId;
+            const myTeams = students[myId] ? (students[myId].joinedTeams || []) : [];
+            const available = Object.keys(teams).filter(tid => {
+                const t = teams[tid];
+                return t.joinMode === 'open' && !myTeams.includes(tid);
+            });
+
+            if (available.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:var(--text-secondary); padding:40px;">目前沒有可加入的開放團隊活動。</p>';
+            } else {
+                available.forEach(tid => {
+                    const t = teams[tid];
+                    const div = document.createElement('div');
+                    div.className = 'team-list-item';
+                    div.innerHTML = `
+                        <div class="team-info">
+                            <h4 style="font-size:1em;">${t.name}</h4>
+                            <p>成員: ${(t.members||[]).length} 人 | 狀態: ${t.status}</p>
+                        </div>
+                        <button class="btn btn-info" onclick="window.joinTeam('${tid}')">加入</button>`;
+                    list.appendChild(div);
+                });
+            }
+            modal.style.display = 'flex';
+        }
+
+        // 修正：加入 try...finally
+        window.joinTeam = async function(tid) {
+            const t = teams[tid];
+            const sid = viewingAccountId;
+            if (!students[sid]) { window.showToast('用戶資料錯誤', 'error'); return; }
+            
+            showLoading(true);
+            try {
+                if(!t.members) t.members = [];
+                t.members.push(sid);
+                if (!students[sid].joinedTeams) students[sid].joinedTeams = [];
+                students[sid].joinedTeams.push(tid);
+                
+                await pushDataToSheet();
+                window.showToast('成功加入團隊', 'success');
+                window.closeModal('team-join-modal');
+                displayStudentResult(students[sid]);
+            } catch(error) {
+                console.error("Join Error:", error);
+                window.showToast('加入失敗', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderGlobalList() {
+            const table = document.getElementById('main-table-display');
+            const textSearch = document.getElementById('overview-text-search').value.toLowerCase();
+            const typeFilter = document.getElementById('overview-type-filter').value; 
+            const statusFilter = document.getElementById('overview-status-filter').value; 
+            
+            let listData = [];
+            let displayCount = 0, displayCertified = 0, displayFailed = 0;
+
+            Object.keys(students).forEach(acct => {
+                const s = students[acct];
+                (s.tasks || []).forEach(t => {
+                    if (typeFilter === 'team') return; 
+                    if (statusFilter === 'todo' && t.status === '已認證') return;
+                    if (statusFilter === 'certified' && t.status !== '已認證') return;
+                    if (statusFilter === 'failed' && t.status !== '認證失敗') return;
+
+                    if (textSearch) {
+                        const taskName = t.name.toLowerCase();
+                        const studentName = s.name.toLowerCase();
+                        if (!taskName.includes(textSearch) && !studentName.includes(textSearch)) return;
+                    }
+
+                    displayCount++;
+                    if(t.status === '已認證') displayCertified++;
+                    if(t.status === '未完成' || t.status === '認證失敗' || t.status === '審核中') displayFailed++;
+
+                    listData.push({
+                        type: 'personal', name: t.name, status: t.status,
+                        targetName: s.name, targetId: acct, taskId: t.id,
+                        commentCount: (t.comments||[]).filter(c=>!c.isRecalled).length
+                    });
+                });
+            });
+
+            Object.keys(teams).forEach(tid => {
+                const t = teams[tid];
+                if (typeFilter === 'personal') return; 
+                if (statusFilter === 'todo' && t.status === '已認證') return;
+                if (statusFilter === 'certified' && t.status !== '已認證') return;
+                if (statusFilter === 'failed' && t.status !== '認證失敗') return;
+
+                if (textSearch) {
+                    const teamName = t.name.toLowerCase();
+                    if (!teamName.includes(textSearch)) return;
+                }
+
+                displayCount++;
+                if(t.status === '已認證') displayCertified++;
+                if(t.status === '未完成' || t.status === '認證失敗' || t.status === '審核中') displayFailed++;
+
+                listData.push({
+                    type: 'team', name: t.name, status: t.status,
+                    targetName: `團隊 (${(t.members||[]).length}人)`, targetId: tid, taskId: 0,
+                    commentCount: (t.comments||[]).filter(c=>!c.isRecalled).length
+                });
+            });
+
+            document.getElementById('filtered-count').textContent = displayCount;
+            document.getElementById('filtered-certified').textContent = displayCertified;
+            document.getElementById('filtered-failed').textContent = displayFailed;
+
+            table.innerHTML = `<thead><tr><th>類型</th><th>項目名稱</th><th>對象</th><th>狀態</th><th style="text-align:right;">操作</th></tr></thead><tbody></tbody>`;
+            const tbody = table.querySelector('tbody');
+            
+            if (listData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-secondary);">沒有符合篩選條件的項目</td></tr>`;
+                return;
+            }
+
+            listData.forEach(item => {
+                const tr = tbody.insertRow();
+                const typeBadge = item.type === 'personal' 
+                    ? `<span class="type-badge-group type-personal">個人</span>` 
+                    : `<span class="type-badge-group type-team">團隊</span>`;
+                const statusBadge = `<span class="badge status-${item.status}">${item.status}</span>`;
+                
+                let actionBtns = '';
+                if (item.type === 'personal') {
+                    actionBtns = `
+                        <div class="action-btn-group" style="justify-content:flex-end;">
+                            <button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${item.targetId}', ${item.taskId}, 'admin', false)" title="留言">💬${item.commentCount}</button>
+                            <button class="btn btn-primary btn-small" onclick="window.editStudent('${item.targetId}')" title="編輯學生">編輯</button>
+                        </div>`;
+                } else {
+                    actionBtns = `
+                        <div class="action-btn-group" style="justify-content:flex-end;">
+                            <button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${item.targetId}', 0, 'admin', true)" title="留言">💬${item.commentCount}</button>
+                            <button class="btn btn-primary btn-small" onclick="window.openTeamModal('${item.targetId}')" title="管理團隊">管理</button>
+                        </div>`;
+                }
+
+                tr.innerHTML = `
+                    <td style="width: 80px;">${typeBadge}</td>
+                    <td><div style="font-weight:500;">${item.name}</div></td>
+                    <td style="color:var(--text-secondary); font-size:0.9em;">${item.targetName}</td>
+                    <td>${statusBadge}</td>
+                    <td style="text-align:right;">${actionBtns}</td>`;
+            });
+        }
+
+        // 修正：加入 loading 機制於留言送出
+        window.openCommentModal = function(itemId, taskId, mode, isTeam) {
+            viewingAccountId = itemId; viewingTaskId = taskId; currentMode = mode; viewingIsTeam = isTeam;
+            let comments = []; let taskName = '';
+            
+            if (isTeam) { const t = teams[itemId]; taskName = t.name; comments = t.comments || []; } 
+            else { const s = students[itemId]; const task = (s.tasks||[]).find(x=>x.id==taskId); if(!task) return; taskName = task.name; comments = task.comments || []; }
+
+            document.getElementById('modal-title').innerText = `留言板: ${taskName}`;
+            renderCommentHistory(comments, mode, isTeam);
+            const submitBtn = document.getElementById('submit-comment-btn');
+            const inputArea = document.getElementById('comment-input');
+            inputArea.value = '';
+            
+            submitBtn.onclick = async function() {
+                const txt = document.getElementById('comment-input').value.trim();
+                if(!txt) return;
+                showLoading(true);
+                try {
+                    const newComment = { senderIdForName: mode === 'admin' ? 'teacher' : viewingAccountId, content: txt, timestamp: new Date().toLocaleString('zh-TW'), isRecalled: false };
+                    if (isTeam) { 
+                        if(!teams[itemId].comments) teams[itemId].comments = [];
+                        teams[itemId].comments.push(newComment); 
+                    } else { 
+                        const taskList = students[itemId].tasks || [];
+                        const task = taskList.find(x=>x.id==taskId);
+                        if(!task.comments) task.comments = [];
+                        task.comments.push(newComment); 
+                    }
+                    await pushDataToSheet(); 
+                    inputArea.value = '';
+                    renderCommentHistory(isTeam ? (teams[itemId].comments||[]) : (students[itemId].tasks.find(x=>x.id==taskId).comments||[]), mode, isTeam); 
+                    if(currentMode !== 'admin') displayStudentResult(students[viewingAccountId]); 
+                    else {
+                        const activeTab = document.querySelector('button.tab-btn.active').innerText;
+                        if(activeTab.includes('認證總覽')) renderGlobalList();
+                        else if(activeTab.includes('學生資料')) renderStudentList();
+                        else renderTeamList();
+                    }
+                    window.showToast('留言已送出', 'success');
+                } catch(e) {
+                    window.showToast('送出失敗', 'error');
+                } finally {
+                    showLoading(false);
+                }
+            };
+            document.getElementById('comment-modal').style.display = 'flex';
+        }
+
+        function renderCommentHistory(comments, viewMode, isTeam) {
+            const container = document.getElementById('comment-history');
+            container.innerHTML = '';
+            comments.forEach((c, index) => {
+                const div = document.createElement('div');
+                let classType = c.senderIdForName === 'teacher' ? 'comment-teacher' : 'comment-student';
+                if (c.isRecalled) classType += ' comment-recalled';
+                div.className = `comment ${classType}`;
+                let senderName = c.senderIdForName === 'teacher' ? '教師' : c.senderIdForName;
+                if (c.senderIdForName !== 'teacher' && students[c.senderIdForName]) senderName = students[c.senderIdForName].name;
+                let contentHTML = c.isRecalled ? `<span style="font-style:italic">此留言已被撤回</span>` : c.content;
+                let actionButtons = '';
+                if (!c.isRecalled) {
+                    const isMyComment = (viewMode === 'student' && c.senderIdForName === viewingAccountId) || (viewMode === 'admin' && c.senderIdForName === 'teacher');
+                    if (isMyComment) actionButtons += `<button class="btn btn-secondary btn-small" style="margin-top:8px; background:rgba(255,255,255,0.8);" onclick="window.handleCommentAction(${index}, 'recall', ${isTeam})">撤回</button>`;
+                }
+                div.innerHTML = `<div class="comment-header"><span>${senderName}</span><span style="font-weight:400; font-size:0.8em; color:var(--text-secondary);">${c.timestamp}</span></div><div>${contentHTML}</div><div class="comment-actions">${actionButtons}</div>`;
+                container.appendChild(div);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 修正：加入 loading 機制於留言撤回
+        window.handleCommentAction = async function(index, action, isTeam) {
+            if (action === 'recall' && !await window.showConfirmDialog('確定要撤回這則留言嗎？')) return;
+            showLoading(true);
+            try {
+                let comments; let saveFn;
+                if (isTeam) { comments = teams[viewingAccountId].comments || []; saveFn = pushDataToSheet; } 
+                else { const t = students[viewingAccountId].tasks.find(x=>x.id==viewingTaskId); comments = t.comments || []; saveFn = pushDataToSheet; }
+                const c = comments[index];
+                if (action === 'recall') c.isRecalled = true;
+                await saveFn();
+                renderCommentHistory(comments, currentMode, isTeam);
+                const activeTab = document.querySelector('button.tab-btn.active').innerText;
+                if(activeTab.includes('認證總覽')) renderGlobalList();
+                else if(activeTab.includes('學生資料')) renderStudentList();
+                else renderTeamList();
+                
+                window.showToast('留言已撤回', 'success');
+            } catch (e) {
+                window.showToast('操作失敗', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        window.exportData = () => {
+            const data = { students: students, teams: teams };
+            const d = JSON.stringify(data, null, 2);
+            const a = document.createElement('a');
+            a.href = 'data:text/json;charset=utf-8,'+encodeURIComponent(d);
+            a.download = 'system_backup.json';
+            a.click();
+        }
+
+        // 批量相關功能
+        function parseParams(paramString) {
+            const params = {};
+            if (!paramString) return params;
+            let cleanStr = paramString.replace(/，/g, ',').replace(/；/g, ';').replace(/｛/g, '{').replace(/｝/g, '}').replace(/^\{|\}$/g, '');
+            try {
+                const items = cleanStr.split(/[,;]/); 
+                items.forEach(item => {
+                    let p = item.trim();
+                    if (!p) return;
+                    if (p.includes('=')) {
+                        const idx = p.indexOf('=');
+                        const k = p.substring(0, idx).trim();
+                        const v = p.substring(idx + 1).trim();
+                        if (v.includes(',')) { params[k] = v.split(',').map(s => s.trim()); } else { params[k] = v; }
+                    } else { params[p] = true; }
+                });
+            } catch(e) { console.error("Parse Error", e); }
+            return params;
+        }
+
+        function parseRule(ruleStr, context) {
+            try {
+                let result = ruleStr;
+                result = result.replace(/\$([^\$]+)\$/g, (match, constant) => constant);
+                result = result.replace(/\[([^\[\{]+)\](?:\{([^\}]*)\})?/g, (match, ruleName, args) => {
+                    const params = parseParams(args);
+                    let output = "";
+                    const now = new Date();
+                    switch(ruleName.trim()) {
+                        case 'number': let num = context.baseNum; if(params.start) num = (context.ruleIndex - 1) + parseInt(params.start); output = params.num ? num.toString().padStart(parseInt(params.num), '0') : num.toString(); break;
+                        case 'year': let y = now.getFullYear(); output = params.national === 'roc' ? (y - 1911).toString() : y.toString(); break;
+                        case 'date': const yyyy = now.getFullYear(); const yy = (yyyy % 100).toString().padStart(2,'0'); const mm = (now.getMonth()+1).toString().padStart(2,'0'); const dd = now.getDate().toString().padStart(2,'0'); if (params.yyyymmdd) output = yyyy + mm + dd; else if (params.ddmmyyyy) output = dd + mm + yyyy; else if (params.yymmdd) output = yy + mm + dd; else if (params.ddmm) output = dd + mm; else if (params.mmdd) output = mm + dd; else output = yyyy + '/' + mm + '/' + dd; break;
+                        case 'time': const hh = now.getHours().toString().padStart(2,'0'); const min = now.getMinutes().toString().padStart(2,'0'); const ss = now.getSeconds().toString().padStart(2,'0'); output = (params.format === 'hhmm') ? (hh + min) : (hh + min + ss); break;
+                        case 'rand': let digits = parseInt(params.num) || 4; let max = Math.pow(10, digits) - 1; let r = Math.floor(Math.random() * (max + 1)); output = r.toString().padStart(digits, '0'); break;
+                        case 'student_num': output = context.studentNum || ""; break;
+                        default: output = match;
+                    }
+                    return output;
+                });
+                return result;
+            } catch(e) { console.error("Rule Error", e); return "ERROR"; }
+        }
+
+        window.updatePreview = function() {
+            const startInput = parseInt(document.getElementById('batch-start').value);
+            const rule = document.getElementById('batch-rule-account').value;
+            const previewEl = document.getElementById('batch-preview');
+            if (!rule.trim()) { previewEl.textContent = '請輸入學號規則'; return; }
+            if (isNaN(startInput)) { previewEl.textContent = '起始錯誤'; return; }
+            let html = '';
+            for (let i = 0; i < 3; i++) {
+                const ctx = { ruleIndex: i+1, baseNum: startInput + i, studentNum: '' };
+                const res = parseRule(rule, ctx);
+                html += `${startInput + i}: ${res}\n`;
+            }
+            previewEl.textContent = html;
+        }
+
+        window.prepareBatchReview = function() {
+            const startInput = parseInt(document.getElementById('batch-start').value);
+            const endInput = parseInt(document.getElementById('batch-end').value);
+            const cls = document.getElementById('batch-class').value;
+            const school = (document.getElementById('batch-school')?.value) || '永靖高工';
+            const ruleAccount = document.getElementById('batch-rule-account').value;
+            let ruleEmail = document.getElementById('batch-rule-email').value.trim();
+
+            if (isNaN(startInput) || isNaN(endInput) || startInput > endInput) { window.showToast('號碼範圍錯誤', 'error'); return; }
+            if (!ruleAccount) { window.showToast('請輸入學號規則', 'error'); return; }
+            let notList = [];
+            const numParamsMatch = ruleAccount.match(/\[number\](?:\{([^\}]*)\})?/);
+            if (numParamsMatch) {
+                const params = parseParams(numParamsMatch[1]);
+                if (params.not) notList = Array.isArray(params.not) ? params.not.map(n => parseInt(n)) : [parseInt(params.not)];
+            }
+            pendingBatchList = [];
+            for (let i = startInput; i <= endInput; i++) {
+                if (notList.includes(i)) continue;
+                const ctx = { ruleIndex: i, baseNum: i };
+                const finalAccount = parseRule(ruleAccount, ctx);
+                if (finalAccount === "ERROR") continue;
+                if (students[finalAccount]) continue;
+                let finalEmail = '';
+                if (ruleEmail) {
+                    const emailCtx = { ruleIndex: i, baseNum: i, studentNum: finalAccount };
+                    finalEmail = parseRule(ruleEmail, emailCtx);
+                }
+                pendingBatchList.push({ school: school, class: cls, account: finalAccount, name: '待輸入', email: finalEmail });
+            }
+            window.closeModal('batch-modal');
+            window.openBatchReviewModal();
+        }
+
+        window.openBatchReviewModal = function() {
+            const modal = document.getElementById('batch-review-modal');
+            modal.style.display = 'flex';
+            document.getElementById('review-global-school').value = '';
+            document.getElementById('review-global-class').value = '';
+            renderBatchReviewTable();
+        }
+
+        function renderBatchReviewTable() {
+            const tbody = document.getElementById('review-table-body');
+            tbody.innerHTML = '';
+            if (pendingBatchList.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">沒有資料</td></tr>'; return; }
+            pendingBatchList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><input type="text" data-idx="${index}" data-field="school" value="${item.school}"></td><td><input type="text" data-idx="${index}" data-field="class" value="${item.class}"></td><td><input type="text" data-idx="${index}" data-field="account" value="${item.account}"></td><td><input type="text" data-idx="${index}" data-field="name" value="${item.name}"></td><td><input type="text" data-idx="${index}" data-field="email" value="${item.email || ''}"></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function setupGlobalListeners() {
+            const updateSchool = document.getElementById('review-global-school');
+            const updateClass = document.getElementById('review-global-class');
+            const handleUpdate = (field, inputEl) => { const val = inputEl.value; if (!val) return; const inputs = document.querySelectorAll(`input[data-field="${field}"]`); inputs.forEach(inp => inp.value = val); };
+            updateSchool.addEventListener('input', () => handleUpdate('school', updateSchool));
+            updateClass.addEventListener('input', () => handleUpdate('class', updateClass));
+        }
+        setupGlobalListeners();
+
+        document.getElementById('review-table-body').addEventListener('input', function(e) {
+            if(e.target.tagName === 'INPUT') { const idx = e.target.dataset.idx; const field = e.target.dataset.field; pendingBatchList[idx][field] = e.target.value; }
+        });
+
+        // 修正：加入 try...finally
+        window.finalizeBatchAdd = async function() {
+            if (pendingBatchList.length === 0) { window.showToast('沒有資料可儲存', 'error'); return; }
+            if (!await window.showConfirmDialog(`確定新增 ${pendingBatchList.length} 筆學生資料？`)) return;
+            
+            showLoading(true);
+            try {
+                let count = 0; let errors = [];
+                for (const s of pendingBatchList) { if (students[s.account]) { errors.push(`學號 ${s.account} 已存在`); } }
+                if (errors.length > 0) { window.showToast(`發生錯誤:\n${errors.join('\n')}`, 'error'); return; }
+                for (const s of pendingBatchList) {
+                    students[s.account] = { account: s.account, name: s.name, school: s.school, class: s.class, email: s.email, tasks: [], joinedTeams: [] }; count++;
+                }
+                await pushDataToSheet(); 
+                
+                window.switchAdminTab('student'); 
+                showToast(`成功新增 ${count} 位學生`, 'success'); 
+                window.closeModal('batch-review-modal');
+            } catch (error) {
+                console.error("Batch Add Error:", error);
+                window.showToast('批次新增失敗', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        window.openBatchModal = function() { document.getElementById('batch-modal').style.display = 'flex'; window.updatePreview(); }
+
+        // --- 初始化 ---
+        window.onload = async function() {
+            await fetchDataFromSheet();
+        }
+
+    </script>
+</body>
+</html>
