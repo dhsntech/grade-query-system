@@ -4,276 +4,541 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>活動/成績認證查詢系統</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600&family=Orbitron:wght@500;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- 美學與變數定義 --- */
+        /* --- CSS 變數定義 (預設主題 - 淺色) --- */
         :root {
-            /* 核心色系 */
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --primary-light: #eff6ff;
+            --primary: #3b82f6; --primary-hover: #2563eb; --primary-light: #eff6ff;
+            --success: #10b981; --success-hover: #059669; --success-light: #ecfdf5;
+            --danger: #ef4444; --danger-hover: #dc2626; --danger-light: #fef2f2;
+            --warning: #f59e0b; --warning-hover: #d97706;
+            --info: #6366f1; --info-hover: #4f46e5;
             
-            --success: #10b981;
-            --success-hover: #059669;
-            --success-light: #ecfdf5;
-
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --danger-light: #fef2f2;
-
-            --warning: #f59e0b;
-            --warning-hover: #d97706;
-            
-            --info: #6366f1;
-            --info-hover: #4f46e5;
-
-            /* 中性色 */
-            --bg-body: #f1f5f9;
+            --bg-body: #f1f5f9; 
             --bg-card: #ffffff;
-            --text-main: #1e293b;
+            --bg-input: #ffffff;
+            --bg-overlay: rgba(15, 23, 42, 0.6);
+            
+            --text-main: #1e293b; 
             --text-secondary: #64748b;
             --border: #e2e8f0;
             
-            /* 間距與圓角 */
-            --radius-sm: 6px;
-            --radius-md: 12px; 
+            --radius-sm: 6px; 
+            --radius-md: 12px;
+            
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            
+            --font-heading: 'Noto Sans TC', sans-serif;
+            --anim-speed: 0.4s;
         }
 
+        /* --- 深色模式主題 --- */
+        [data-theme="dark"] {
+            --primary: #60a5fa; --primary-hover: #3b82f6; --primary-light: #1e3a8a;
+            --success: #34d399; --success-hover: #10b981; --success-light: #064e3b;
+            --danger: #f87171; --danger-hover: #ef4444; --danger-light: #450a0a;
+            --warning: #fbbf24; --warning-hover: #f59e0b;
+            --info: #818cf8; --info-hover: #6366f1;
+            
+            --bg-body: #0f172a; 
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            
+            --text-main: #f1f5f9; 
+            --text-secondary: #cbd5e1;
+            --border: #475569;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+        }
+        
+        [data-theme="dark"] .btn { color: #f8fafc !important; border-color: #64748b; }
+        [data-theme="dark"] .btn-primary { background-color: var(--primary); color: white !important; border-color: var(--primary); }
+        [data-theme="dark"] .btn-secondary { background-color: transparent; color: #f8fafc !important; }
+
+        /* --- OPUS 風格主題 (修正: background: 確支援漸層) --- */
+        [data-theme="opus"] {
+            --primary: #f97316; --primary-hover: #ea580c; --primary-light: rgba(249, 115, 22, 0.15);
+            --success: #fbbf24; --success-hover: #f59e0b; --success-light: rgba(251, 191, 36, 0.15); 
+            --danger: #ff2a2a; --danger-hover: #ff0000; --danger-light: rgba(255, 42, 42, 0.1);
+            --warning: #ffffff; --warning-hover: #e5e7eb;
+            --info: #00d2ff; --info-hover: #3a7bd5;
+            
+            /* 深色漸層背景 */
+            --bg-body: radial-gradient(circle at center, #1a2236 0%, #05070a 100%);
+            --bg-card: linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 33, 0.98) 100%);
+            --bg-input: rgba(30, 41, 59, 0.4);
+            
+            --text-main: #e0f2fe;  /* 冰白 */
+            --text-secondary: #94a3b8; /* 霧灰 */
+            --border: rgba(56, 189, 248, 0.2);
+            
+            --radius-sm: 0px; 
+            --radius-md: 0px;
+            
+            --shadow-sm: 0 0 0 1px rgba(56, 189, 248, 0.1);
+            --shadow-md: 0 0 20px rgba(0, 210, 255, 0.05);
+            
+            --font-heading: 'Orbitron', 'Noto Sans TC', sans-serif;
+            --anim-speed: 0.5s;
+        }
+
+        /* 標題強制置中與白色文字 (OPUS 修正版) */
+        [data-theme="opus"] h1, 
+        [data-theme="opus"] h2, 
+        [data-theme="opus"] h3, 
+        [data-theme="opus"] h4, 
+        [data-theme="opus"] .team-info h4, 
+        [data-theme="opus"] .data-table th, 
+        [data-theme="opus"] .input-group label,
+        [data-theme="opus"] #student-form-panel h4 {
+            color: #fff !important;
+            text-align: center !important; /* 強制置中 */
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 確保左右結構的標題也置中 (如側邊欄) */
+        [data-theme="opus"] .sidebar h3, 
+        [data-theme="opus"] .admin-tabs {
+            text-align: center !important;
+        }
+        
+        [data-theme="opus"] .data-table th { text-align: left !important; }
+        [data-theme="opus"] .data-table td { text-align: left !important; }
+        
+        [data-theme="opus"] h1 { 
+            letter-spacing: 5px; 
+            font-size: 2em; 
+            color: var(--info) !important; 
+            border-bottom: 1px solid var(--border); 
+            display: inline-block; 
+            padding-bottom: 15px; 
+            margin-bottom: 40px; 
+            position: relative;
+            width: 100%; /* 確保寬度滿版以便置中生效 */
+        }
+        [data-theme="opus"] h1::after {
+            content: ''; position: absolute; left: 50%; bottom: -1px; width: 20%; height: 2px; background: var(--primary); transform: translateX(-50%);
+        }
+        
+        /* 通用標題置中 */
+        .card h2, .card h3, .modal-content h3, #admin-welcome-panel h3 {
+            text-align: center;
+        }
+
+        /* --- CRT 掃描線與視覺效果 (OPUS 專屬) --- */
+        [data-theme="opus"] body::before {
+            /* 背景網格 - 在最下層 */
+            content: ''; position: fixed; top: 0; left: 0; width: 200vw; height: 200vh;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            background-position: center;
+            transform: perspective(500px) rotateX(60deg) translateY(-150px) translateZ(-200px);
+            opacity: 0.05;
+            z-index: -2;
+            animation: gridMove 30s linear infinite;
+        }
+
+        [data-theme="opus"] body::after {
+            /* CRT 掃描線覆蓋層 - 最上層但點擊穿透 */
+            content: " "; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            z-index: 9999;
+            pointer-events: none; 
+            opacity: 0.3;
+            box-shadow: 0 0 100px rgba(0,0,0,0.9) inset; /* CRT邊角暗角 */
+        }
+
+        [data-theme="opus"] .card {
+            animation: subtleFlicker 4s infinite;
+        }
+
+        @keyframes gridMove { 0% { transform: perspective(500px) rotateX(60deg) translateY(0) translateZ(-200px); } 100% { transform: perspective(500px) rotateX(60deg) translateY(60px) translateZ(-200px); } }
+        @keyframes subtleFlicker { 
+            0% { opacity: 0.98; }
+            3% { opacity: 0.94; }
+            6% { opacity: 0.99; }
+            9% { opacity: 1; }
+            89% { opacity: 1; }
+            93% { opacity: 0.96; }
+            96% { opacity: 1; }
+            100% { opacity: 0.98; }
+        }
+
+        /* --- 基礎樣式 --- */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
         
-        /* Body 排版 */
+        /* 修正：將 background-color 改為 background 以支援漸層 */
         body { 
-            background-color: var(--bg-body); 
-            color: var(--text-main); 
-            line-height: 1.6; 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 0;
+            background: var(--bg-body); 
+            color: var(--text-main); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; overflow-x: hidden; transition: background-color 0.6s ease, color 0.6s ease; position: relative; 
         }
         
-        /* 容器 */
-        #app-container { 
-            max-width: 1440px; 
-            width: 100%; 
-            padding: 20px; 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
+        #app-container { max-width: 1440px; width: 100%; padding: 20px; flex: 1; display: flex; flex-direction: column; position: relative; z-index: 1; }
+
+        [data-theme="opus"] .card {
+            border: 1px solid var(--border); 
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+        }
+        [data-theme="opus"] .card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--info), transparent);
+            opacity: 0.5;
+        }
+        /* 卡片四角極簡標示 */
+        [data-theme="opus"] .card::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to right, var(--info) 1px, transparent 1px) 0 0, linear-gradient(to bottom, var(--info) 1px, transparent 1px) 0 0, linear-gradient(to left, var(--info) 1px, transparent 1px) 100% 0, linear-gradient(to top, var(--info) 1px, transparent 1px) 100% 100%;
+            background-size: 10px 10px;
+            background-repeat: no-repeat;
+            opacity: 0.3;
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+        
+        /* 修正懸浮動畫：幅度變小 (-1px) */
+        [data-theme="opus"] .card:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
+            border-color: var(--info); 
+        }
+        [data-theme="opus"] .card:hover::after { opacity: 0.8; }
+
+        .card { background-color: var(--bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 30px; margin-bottom: 0; border: 1px solid transparent; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; backdrop-filter: blur(10px); position: relative; overflow: hidden; }
+        .card:hover { box-shadow: var(--shadow-md); border-color: var(--border); transform: translateY(-1px); }
+
+        #result-container { display: flex; flex-direction: column; align-items: center; }
+        #result-container .card { width: auto; margin-bottom: 40px; }
+
+        /* 面板動畫進入 */
+        .animate-panel-enter {
+            animation: slideInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
         }
 
-        /* 標題 */
-        h1 { text-align: center; color: var(--text-main); margin-bottom: 30px; font-weight: 700; letter-spacing: -0.5px; }
-        h2 { font-size: 1.4em; font-weight: 600; margin-bottom: 15px; color: var(--text-main); }
-        h3 { font-size: 1.1em; font-weight: 600; margin-bottom: 12px; color: var(--text-main); }
-
-        /* 卡片通用樣式 */
-        .card { 
-            background-color: var(--bg-card); border-radius: var(--radius-md); 
-            box-shadow: var(--shadow-sm); padding: 30px; margin-bottom: 0; 
-            border: 1px solid transparent; transition: box-shadow 0.3s ease;
-            width: 100%;
-        }
-        .card:hover { box-shadow: var(--shadow-md); }
-
-        /* 表單元素 */
-        .input-group { margin-bottom: 16px; }
+        .input-group { margin-bottom: 16px; position: relative; width: 100%; }
         .input-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9em; color: var(--text-secondary); }
+        
         .input-group textarea, .input-group input, .input-group select {
             width: 100%; padding: 10px 14px; 
             border: 1px solid var(--border); border-radius: var(--radius-sm); 
-            font-size: 1em; background: #fff; color: var(--text-main);
-            transition: all 0.2s;
+            font-size: 1em; background: var(--bg-input); color: var(--text-main);
+            transition: all 0.3s ease;
         }
-        .input-group input:focus, .input-group textarea:focus, .input-group select:focus { 
-            border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-light); 
+
+        /* OPUS 輸入框極簡極致 */
+        [data-theme="opus"] .input-group input, [data-theme="opus"] .input-group textarea, [data-theme="opus"] .input-group select {
+            background: rgba(10, 15, 20, 0.8);
+            border: 1px solid transparent;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        [data-theme="opus"] .input-group input:focus, [data-theme="opus"] .input-group textarea:focus, [data-theme="opus"] .input-group select:focus {
+            outline: none;
+            background: rgba(20, 30, 40, 0.9);
+            border-bottom: 1px solid var(--info);
+            box-shadow: 0 10px 20px -10px rgba(0, 210, 255, 0.2);
         }
         
-        /* 按鈕系統 */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            padding: 8px 16px; border: none; border-radius: var(--radius-sm); 
-            font-size: 0.9em; font-weight: 500; cursor: pointer; 
-            transition: all 0.2s ease; text-decoration: none; line-height: 1.5;
-        }
-        .btn:active { transform: scale(0.98); }
+        .batch-inputs-wrapper { display: flex; gap: 10px; width: 100%; align-items: center; }
+        .batch-inputs-wrapper input { width: 50%; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; border: none; border-radius: var(--radius-sm); font-size: 0.9em; font-weight: 500; cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); text-decoration: none; line-height: 1.5; position: relative; overflow: hidden; outline: none; -webkit-tap-highlight-color: transparent;}
         
-        /* 顏色變體 */
+        /* 按鈕按下動畫 */
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* OPUS 按鈕風格 */
+        [data-theme="opus"] .btn { 
+            background: transparent; border: 1px solid var(--border); color: var(--info) !important; 
+            letter-spacing: 1px; text-transform: uppercase; font-size: 0.8em; font-weight: 600; font-family: 'Orbitron', sans-serif;
+            position: relative;
+            box-shadow: 0 0 5px transparent;
+        }
+        [data-theme="opus"] .btn:hover { 
+            background: rgba(0, 210, 255, 0.1); 
+            color: #fff !important;
+            border-color: var(--info); 
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        [data-theme="opus"] .btn:active {
+            transform: scale(0.97);
+            background: rgba(0, 210, 255, 0.2);
+        }
+
+        /* OPUS 刪除按鈕 */
+        [data-theme="opus"] .btn-danger {
+            border-color: #ff5555; color: #ff5555 !important;
+        }
+        [data-theme="opus"] .btn-danger:hover {
+            background: rgba(255, 85, 85, 0.1);
+            color: #ff5555 !important; 
+            box-shadow: 0 0 15px rgba(255, 85, 85, 0.4);
+            animation: dangerGlitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+        @keyframes dangerGlitch { 0% { transform: translate(0); } 20% { transform: translate(-2px, 1px); } 40% { transform: translate(-2px, -1px); } 60% { transform: translate(2px, 1px); } 80% { transform: translate(2px, -1px); } 100% { transform: translate(0); } }
+
         .btn-primary { background-color: var(--primary); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-        
+        .btn-primary:hover { background-color: var(--primary-hover); }
         .btn-secondary { background-color: white; border: 1px solid var(--border); color: var(--text-main); }
         .btn-secondary:hover { background-color: var(--bg-body); border-color: #cbd5e1; }
-        
         .btn-success { background-color: var(--success); color: white; }
         .btn-success:hover { background-color: var(--success-hover); }
-        
         .btn-danger { background-color: var(--danger); color: white; }
         .btn-danger:hover { background-color: var(--danger-hover); }
+        .btn-info { background-color: var(--info); color: white; }
+        .btn-info:hover { background-color: var(--info-hover); }
 
-        /* 小尺寸按鈕 */
         .btn-small { padding: 5px 10px; font-size: 0.85em; border-radius: 4px; }
-
-        /* 按鈕群組與間距 */
         .button-group, .action-btn-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         
-        /* 隱藏類 */
         .hidden { display: none !important; }
 
-        /* 管理介面標籤頁 */
-        .admin-tabs { display: flex; background: var(--bg-body); padding: 4px; border-radius: var(--radius-sm); width: fit-content; }
-        .tab-btn {
-            padding: 8px 20px; cursor: pointer; border: none; background: transparent; 
-            font-size: 0.9em; font-weight: 600; color: var(--text-secondary); border-radius: 4px;
-            transition: all 0.3s;
-        }
+        .admin-tabs { display: flex; background: var(--bg-body); padding: 4px; border-radius: var(--radius-sm); width: fit-content; border: 1px solid var(--border); }
+        .tab-btn { padding: 8px 20px; cursor: pointer; border: none; background: transparent; font-size: 0.9em; font-weight: 600; color: var(--text-secondary); border-radius: 4px; transition: all 0.3s; }
         .tab-btn:hover { color: var(--text-main); }
-        .tab-btn.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); font-weight: 600; }
+        .tab-btn.active { background: var(--bg-card); color: var(--primary); box-shadow: var(--shadow-sm); font-weight: 600; border: 1px solid var(--border); }
 
-        /* 表格優化 */
         .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; overflow: hidden; border-radius: var(--radius-sm); }
-        .data-table th { 
-            background-color: #f8fafc; color: var(--text-secondary); font-weight: 600; font-size: 0.9em; 
-            text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); 
-        }
-        .data-table td { 
-            padding: 12px 16px; border-bottom: 1px solid var(--border); 
-            color: var(--text-main); font-size: 0.95em; 
-        }
+        .data-table th { background-color: rgba(248, 250, 252, 0.1); color: var(--text-secondary); font-weight: 600; font-size: 0.9em; text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-main); font-size: 0.95em; }
         .data-table tbody tr:last-child td { border-bottom: none; }
-        .data-table tbody tr:hover { background-color: #fcfcfc; }
+        .data-table tbody tr:hover { background-color: rgba(248, 250, 252, 0.05); }
 
-        /* 狀態標籤 */
         .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.8em; font-weight: 600; }
         .status-已認證 { background-color: var(--success-light); color: var(--success); }
         .status-審核中, .status-認證中 { background-color: var(--primary-light); color: var(--primary); }
         .status-認證失敗 { background-color: var(--danger-light); color: var(--danger); }
-        .status-未完成 { background-color: #f1f5f9; color: var(--text-secondary); }
+        .status-未完成 { background-color: rgba(241, 245, 249, 0.1); color: var(--text-secondary); border: 1px solid var(--border); }
         .team-badge { background-color: var(--info); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; margin-right: 8px; }
         .type-badge-group { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; margin-right: 4px; }
         .type-personal { background-color: #e0e7ff; color: #4338ca; }
         .type-team { background-color: #dbeafe; color: #1e40af; }
 
-        /* 管理介面佈局 */
+        [data-theme="dark"] .type-personal, [data-theme="opus"] .type-personal { background-color: #312e81; color: #a5b4fc; border: 1px solid rgba(165, 180, 252, 0.3); }
+        [data-theme="dark"] .type-team, [data-theme="opus"] .type-team { background-color: #1e3a8a; color: #93c5fd; border: 1px solid rgba(147, 197, 253, 0.3); }
+
         .admin-layout { display: grid; grid-template-columns: 480px 1fr; gap: 24px; align-items: start; }
         @media (max-width: 1024px) { .admin-layout { grid-template-columns: 1fr; } }
 
-        .sidebar { background: white; padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); min-height: 400px; border: 1px solid var(--border); }
-        .list-container { background: white; padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); min-height: 500px; border: 1px solid var(--border); }
+        .sidebar { background: var(--bg-card); padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); min-height: 400px; border: 1px solid var(--border); }
+        .list-container { background: var(--bg-card); padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); min-height: 500px; border: 1px solid var(--border); }
 
-        .list-search { 
-            width: 100%; margin-bottom: 10px; padding: 8px 12px; 
-            border: 1px solid var(--border); border-radius: var(--radius-sm); 
-            background-color: #f8fafc; color: var(--text-main);
-            font-size: 0.9em;
-        }
+        .list-search { width: 100%; margin-bottom: 10px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background-color: var(--bg-input); color: var(--text-main); font-size: 0.9em; }
         .list-search::placeholder { color: #94a3b8; }
 
-        .stat-box { background: var(--primary-light); padding: 15px; border-radius: var(--radius-sm); margin-bottom: 10px; text-align: center; border: 1px solid #dbeafe; }
+        .stat-box { background: var(--primary-light); padding: 15px; border-radius: var(--radius-sm); margin-bottom: 10px; text-align: center; border: 1px solid var(--border); }
         .stat-num { font-size: 1.8em; font-weight: 700; color: var(--primary); display: block; }
         .stat-label { font-size: 0.85em; color: var(--text-main); }
 
-        /* Modal */
-        .modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-            background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-            align-items: center; justify-content: center;
-        }
-        .modal-content {
-            background-color: #fff; padding: 30px; border-radius: var(--radius-md); width: 90%; max-width: 550px;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); position: relative;
-            animation: modalFadeIn 0.2s ease-out; max-height: 90vh; display: flex; flex-direction: column;
-        }
-        .modal-body { overflow-y: auto; margin: 20px 0; padding: 0; background: transparent; border: none; flex-grow: 1; }
+        /* Modal & Progress Bar */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: var(--bg-overlay); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+        .modal-content { background-color: var(--bg-card); padding: 30px; border-radius: var(--radius-md); width: 90%; max-width: 550px; box-shadow: var(--shadow-md); position: relative; animation: modalFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); max-height: 90vh; display: flex; flex-direction: column; border: 1px solid var(--border); }
+        .modal-body { overflow-y: auto; margin: 20px 0; padding: 0; border: none; flex-grow: 1; width: 100%; min-height: 100px; }
         .modal-scroll { overflow-y: auto; padding-right: 5px; }
         .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; transition: 0.2s; }
         .close-modal:hover { color: var(--text-main); }
 
-        .comment { padding: 14px; border-radius: var(--radius-sm); font-size: 0.95em; margin-bottom: 10px; animation: fadeIn 0.3s; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .comment-student { background-color: white; border: 1px solid var(--border); align-self: flex-start; max-width: 85%; margin-right: auto; }
-        .comment-teacher { background-color: var(--primary-light); border: 1px solid var(--primary); color: var(--primary-dark); align-self: flex-end; max-width: 85%; text-align: left; margin-left: auto; }
-        .comment-recalled { background: repeating-linear-gradient(45deg, #f1f5f9, #f1f5f9 10px, #fff 10px, #fff 20px); border: 1px dashed #cbd5e1; text-align: center; font-style: italic; color: #94a3b8; width: 100%; max-width: 100%; align-self: center; }
+        /* 進度條動畫樣式 */
+        .progress-container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; width: 100%; padding: 20px; }
+        .progress-bar-bg { width: 100%; height: 4px; background: var(--bg-input); border-radius: 2px; overflow: hidden; position: relative; margin-bottom: 10px; }
+        .progress-bar-fill { height: 100%; background: var(--info); width: 0%; box-shadow: 0 0 10px var(--info); transition: width 0.1s linear; }
+        .progress-text { font-family: 'Orbitron', 'Source Code Pro', monospace; font-size: 0.8em; color: var(--text-secondary); letter-spacing: 1px; }
+
+        .comment { padding: 14px; border-radius: var(--radius-sm); font-size: 0.95em; margin-bottom: 10px; animation: fadeInUp 0.3s ease-out; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .comment-student { background-color: var(--bg-card); border: 1px solid var(--border); align-self: flex-start; max-width: 85%; margin-right: auto; }
+        .comment-teacher { background-color: var(--primary-light); border: 1px solid var(--primary); color: #1e40af; align-self: flex-end; max-width: 85%; text-align: left; margin-left: auto; }
+        [data-theme="dark"] .comment-teacher, [data-theme="opus"] .comment-teacher { background-color: rgba(59, 130, 246, 0.2); color: #93c5fd; border-color: #3b82f6; }
+
+        .comment-recalled { background: repeating-linear-gradient(45deg, var(--bg-input), var(--bg-input) 10px, var(--bg-card) 10px, var(--bg-card) 20px); border: 1px dashed var(--border); text-align: center; font-style: italic; color: var(--text-secondary); width: 100%; max-width: 100%; align-self: center; }
 
         .task-admin-container { margin-bottom:10px; max-height: 250px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-sm); }
-
         .admin-table-inner { width:100%; border-collapse: collapse; font-size: 0.9em; }
         .admin-table-inner thead { background:#f8fafc; position:sticky; top:0; z-index:10; }
         .admin-table-inner th { padding:8px 6px; font-weight:600; font-size:0.8em; color:var(--text-secondary); border-bottom:1px solid var(--border); white-space: nowrap;}
         .admin-table-inner td { padding:8px 6px; border-bottom:1px solid var(--border); vertical-align: middle; }
+        [data-theme="dark"] .admin-table-inner thead, [data-theme="opus"] .admin-table-inner thead { background: rgba(255,255,255,0.05); }
 
-        .preview-box { background: #1e293b; color: #a5b4fc; padding: 15px; border-radius: var(--radius-sm); font-family: monospace; font-size: 0.9em; white-space: pre-wrap; margin-top: 10px; border: 1px solid #334155; }
-        .rule-help { background:#eff6ff; padding:15px; font-size:0.85em; border:1px solid #dbeafe; border-radius:var(--radius-sm); margin-bottom:15px; color:#475569;}
-        .rule-help code { background:#e0e7ff; padding:2px 6px; border-radius:4px; color:#4338ca; font-family: monospace; }
+        .preview-box { background: var(--bg-card); color: var(--text-main); padding: 15px; border-radius: var(--radius-sm); font-family: monospace; font-size: 0.9em; white-space: pre-wrap; margin-top: 10px; border: 1px solid var(--border); }
+        .rule-help { background:var(--primary-light); padding:15px; font-size:0.85em; border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:15px; color:var(--text-main);}
+        .rule-help code { background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px; font-family: monospace; color: inherit;}
 
         .team-list-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); transition: background 0.2s; }
         .team-list-item:last-child { border-bottom: none; }
-        .team-list-item:hover { background-color: #f8fafc; }
+        .team-list-item:hover { background-color: rgba(248, 250, 252, 0.05); }
+
+        [data-theme="opus"] .team-list-item { border-bottom: 1px solid rgba(56, 189, 248, 0.2); }
+        [data-theme="opus"] .team-list-item:hover { background-color: rgba(56, 189, 248, 0.05); }
 
         .batch-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
-        .batch-table th { background: #f8fafc; color: var(--text-secondary); font-weight: 600; padding: 10px; text-align: left; border-bottom: 2px solid var(--border); }
+        .batch-table th { background: rgba(248, 250, 252, 0.1); color: var(--text-secondary); font-weight: 600; padding: 10px; text-align: left; border-bottom: 2px solid var(--border); }
         .batch-table td { padding: 8px; border-bottom: 1px solid var(--border); cursor: text; }
-        .batch-table input { width: 100%; border: 1px solid transparent; background: transparent; padding: 6px; font-size: inherit; border-radius: 4px; transition: 0.2s; cursor: text; }
-        .batch-table input:hover { border-color: #cbd5e1; background: #fff; }
-        .batch-table input:focus { border-color: var(--primary); background: white; outline: none; cursor: text;}
+        .batch-table input { width: 100%; border: 1px solid transparent; background: transparent; padding: 6px; font-size: inherit; border-radius: 4px; transition: 0.2s; cursor: text; color: inherit;}
+        .batch-table input:hover { border-color: #cbd5e1; background: var(--bg-body); }
+        .batch-table input:focus { border-color: var(--primary); background: var(--bg-body); outline: none; cursor: text;}
         
-        /* Toast 通知 */
-        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast { 
-            padding: 12px 20px; background: white; border-radius: var(--radius-sm); 
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); 
-            animation: slideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
-            min-width: 280px; display: flex; align-items: center; font-weight: 500;
-            border-left: 4px solid var(--primary);
-        }
+        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { padding: 12px 20px; background: var(--bg-card); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); animation: slideInUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); min-width: 280px; display: flex; align-items: center; font-weight: 500; border-left: 4px solid var(--primary); pointer-events: auto; color: var(--text-main); pointer-events: auto; backdrop-filter: blur(5px); }
         .toast.success { border-left-color: var(--success); }
         .toast.error { border-left-color: var(--danger); }
         .toast.warning { border-left-color: var(--warning); }
         
-        /* 載入動畫與遮罩 */
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.9); z-index: 20000;
-            display: none; align-items: center; justify-content: center; flex-direction: column;
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-overlay); z-index: 20000; display: none; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(10px); transition: opacity 0.5s ease; }
+        
+        /* --- OPUS Loader V5：精緻反應堆核心 --- */
+        .planet-probe-spacer {
+            display: none; 
+            width: 0; height: 0;
+            overflow: hidden;
         }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite;
+        body[data-theme="opus"] .spinner { display: none; } 
+        body[data-theme="opus"] .planet-probe-spacer { 
+            display: flex; 
+            position: relative; width: 80px; height: 80px;
+            align-items: center; justify-content: center;
         }
 
-        /* 動畫 */
-        @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        /* 核心光點 */
+        .reactor-core {
+            width: 20px; height: 20px;
+            background-color: var(--info);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--info), 0 0 30px var(--info);
+            position: absolute;
+            animation: pulseCore 2s infinite ease-in-out;
+            z-index: 10;
+        }
+
+        /* 外層旋轉儀表環 */
+        .reactor-outer {
+            width: 100%; height: 100%;
+            border: 2px solid rgba(0, 210, 255, 0.1);
+            border-top-color: var(--info);
+            border-radius: 50%;
+            position: absolute;
+            animation: spin 1.5s linear infinite;
+        }
+
+        /* 內層反向旋轉環 */
+        .reactor-middle {
+            width: 60%; height: 60%;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: absolute;
+            animation: spinCCW 3s linear infinite;
+        }
+
+        @keyframes pulseCore { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.3); opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spinCCW { 100% { transform: rotate(-360deg); } }
+
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+
+        @keyframes slideInUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Confirm Dialog */
-        #confirm-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10001; display: none; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
-        .confirm-box { background: #fff; padding: 32px; border-radius: var(--radius-md); text-align: center; min-width: 320px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        #confirm-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10001; display: none; background: var(--bg-overlay); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .confirm-box { background: var(--bg-card); padding: 32px; border-radius: var(--radius-md); text-align: center; min-width: 320px; box-shadow: var(--shadow-md); color: var(--text-main); }
+
+        #theme-toggle-btn {
+            position: fixed; bottom: 24px; right: 24px;
+            width: 48px; height: 48px; border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-card); color: var(--text-main);
+            font-size: 20px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: var(--shadow-md); z-index: 5000;
+            transition: all 0.3s ease;
+        }
+        #theme-toggle-btn:hover { transform: rotate(90deg) scale(1.1); background: var(--primary-light); color: var(--primary); }
+        
+        body[data-theme="opus"] #theme-toggle-btn {
+             box-shadow: 0 0 10px rgba(0, 210, 255, 0.3); border-color: rgba(0, 210, 255, 0.3); color: var(--info);
+             background: rgba(10, 15, 20, 0.8);
+        }
+        body[data-theme="opus"] #theme-toggle-btn:hover { background: rgba(0, 210, 255, 0.1); color: #fff; border-color: var(--info); }
+
+        /* --- 登出動畫層 --- */
+        #logout-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 30000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.5s ease;
+        }
+        
+        /* OPUS 特風格打字機 */
+        [data-theme="opus"] .typewriter-text {
+            color: var(--info); 
+            font-family: 'Orbitron', monospace; 
+            font-size: 2.5em; 
+            font-weight: 700;
+            position: relative; 
+            min-height: 1.5em;
+            text-shadow: 0 0 15px var(--info), 0 0 30px var(--primary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        [data-theme="opus"] .cursor {
+            display: inline-block; width: 15px; height: 1.2em; background-color: var(--info);
+            margin-left: 5px; vertical-align: middle;
+            animation: blinkOpus 1s infinite;
+            box-shadow: 0 0 10px var(--info);
+        }
+        @keyframes blinkOpus { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* 預設打字機樣式 (非OPUS) */
+        .typewriter-text {
+            color: #fff; 
+            font-family: sans-serif; 
+            font-size: 2em;
+            font-weight: 600;
+        }
+        .cursor {
+            display: inline-block; width: 3px; height: 1.5em; background-color: #fff;
+            margin-left: 5px; vertical-align: middle;
+            animation: blink 0.8s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
     </style>
 </head>
 <body>
 
-    <!-- 載入中遮罩 -->
+    <!-- 全局 Loading Overlay -->
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p style="margin-top:15px; color:var(--text-secondary); font-weight:600;">同步資料庫中，請稍候...</p>
+        <div class="planet-probe-spacer">
+            <div class="reactor-outer"></div>
+            <div class="reactor-middle"></div>
+            <div class="reactor-core"></div>
+        </div>
+        <p style="margin-top:20px; color:var(--text-secondary); font-weight:600; letter-spacing: 1px;">SYSTEM SYNCHRONIZING...</p>
     </div>
+
+    <!-- 登出動畫 Overlay -->
+    <div id="logout-overlay">
+        <div class="typewriter-text"></div>
+    </div>
+
+    <button id="theme-toggle-btn" title="切換主題">🎨</button>
 
     <div id="app-container">
         <h1>活動/成績認證查詢系統</h1>
-
-        <!-- Toast 通知區 -->
+        
         <div id="toast-container"></div>
-        <!-- 確認對話框區 -->
         <div id="confirm-container"></div>
 
         <!-- 1. 學生登入 -->
-        <div id="login-container" class="card" style="max-width: 480px; margin: 40px auto; padding: 40px;">
+        <div id="login-container" class="card animate-panel-enter" style="max-width: 480px; margin: 40px auto; padding: 40px;">
             <h2 style="text-align:center; margin-bottom:30px;">成績查詢登入</h2>
             <form id="login-form">
                 <div class="input-group">
@@ -301,7 +566,7 @@
         </div>
 
         <!-- 2. 教師登入 -->
-        <div id="admin-login-container" class="card hidden" style="max-width: 400px; margin: 40px auto; padding: 40px;">
+        <div id="admin-login-container" class="card hidden animate-panel-enter" style="max-width: 400px; margin: 40px auto; padding: 40px;">
             <h2 style="text-align:center; margin-bottom:30px;">教師管理員登入</h2>
             <form id="admin-login-form">
                 <div class="input-group">
@@ -318,7 +583,7 @@
 
         <!-- 3. 學生結果頁面 -->
         <div id="result-container" class="hidden">
-            <div class="card" style="max-width: 800px;">
+            <div class="card animate-panel-enter" style="max-width: 800px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid var(--border);">
                     <h3>學生基本資料</h3>
                     <button class="btn btn-secondary" onclick="window.logout()">登出</button>
@@ -332,7 +597,7 @@
                 </div>
             </div>
             
-            <div class="card" style="max-width: 1000px;">
+            <div class="card animate-panel-enter" style="max-width: 1000px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; padding-bottom:15px; border-bottom:1px solid var(--border);">
                     <h2>學期成績項目</h2>
                     <button class="btn btn-info" onclick="window.openTeamJoinModal()">查看/加入團隊活動</button>
@@ -360,24 +625,21 @@
             </header>
             
             <div class="admin-layout">
-                <!-- 左側邊欄 -->
                 <div class="sidebar">
-                    
-                    <!-- 選項卡 1: 學生管理面板 -->
                     <div id="tab-student-action">
-                        <div id="admin-welcome-panel">
+                        <div id="admin-welcome-panel" class="animate-panel-enter">
                             <h3>管理選單</h3>
                             <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
                                 <button class="btn btn-warning" style="width:100%; justify-content: flex-start;" onclick="window.showStudentForm('new')">➕ 新增單一學生</button>
                                 <button class="btn btn-info" style="width:100%; justify-content: flex-start;" onclick="window.openTeamModal(false)">➕ 新增團隊活動</button>
                             </div>
-                            <div style="margin-top:30px; padding:20px; background:#f8fafc; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                            <div style="margin-top:30px; padding:20px; background:var(--bg-body); border-radius:var(--radius-sm); border:1px solid var(--border);">
                                 <h4 style="margin-bottom:10px; font-size:0.9em; color:var(--text-secondary);">Google Sheet 連線狀態</h4>
                                 <div id="sync-status" style="font-size:0.85em; color:var(--success); font-weight:600;">檢查中...</div>
                             </div>
                         </div>
 
-                        <div id="student-form-panel" class="hidden">
+                        <div id="student-form-panel" class="hidden animate-panel-enter">
                             <h3>編輯/新增學生</h3>
                             <form id="student-form" style="margin-top:20px;">
                                 <div class="input-group">
@@ -405,7 +667,12 @@
                                 <div class="task-admin-container">
                                     <table id="tasks-table-admin" class="admin-table-inner">
                                         <thead>
-                                            <tr><th style="text-align:left; width: 40%;">名稱</th><th style="text-align:left; width: 25%;">狀態</th><th style="text-align:center; width: 25%;">留言</th><th style="text-align:center; width: 10%;"></th></tr>
+                                            <tr>
+                                                <th style="text-align:left; width: 40%;">名稱</th>
+                                                <th style="text-align:left; width: 20%;">狀態</th>
+                                                <th style="text-align:center; width: 20%;">留言</th>
+                                                <th style="text-align:center; width: 5%;"></th>
+                                            </tr>
                                         </thead>
                                         <tbody></tbody>
                                     </table>
@@ -421,14 +688,13 @@
                         </div>
                     </div>
 
-                    <!-- 選項卡 2: 團隊操作面板 -->
-                    <div id="tab-team-action" class="hidden">
+                    <div id="tab-team-action" class="hidden animate-panel-enter">
                         <h3>團隊活動操作</h3>
                         <button class="btn btn-success" style="width:100%; margin-bottom:20px;" onclick="window.openTeamModal(false)">建立新團隊活動</button>
                         
-                        <div style="background:var(--primary-light); padding:20px; border-radius:var(--radius-sm); border:1px solid #dbeafe; color:var(--primary);">
+                        <div style="background:var(--primary-light); padding:20px; border-radius:var(--radius-sm); border:1px solid var(--border); color:var(--primary);">
                             <h4 style="margin-bottom:10px; font-size:0.95em;">功能說明</h4>
-                            <ul style="padding-left:20px; line-height: ChromeVoxOnSpeak; font-size:0.9em;">
+                            <ul style="padding-left:20px; line-height: 1.5; font-size:0.9em;">
                                 <li>團隊活動允許多位學生共同參與同一個任務。</li>
                                 <li>開放加入：學生可在首頁自行點擊加入。</li>
                                 <li>限制加入：僅能由教師在此手動輸入學號新增成員。</li>
@@ -436,8 +702,7 @@
                         </div>
                     </div>
 
-                    <!-- 選項卡 3: 認證總覽面板 -->
-                    <div id="tab-overview-action" class="hidden">
+                    <div id="tab-overview-action" class="hidden animate-panel-enter">
                         <h3>認證統計與過濾</h3>
                         <div style="margin-top:20px;">
                             <div class="stat-box">
@@ -445,17 +710,17 @@
                                 <span class="stat-label">符合篩選條件項目</span>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <div class="stat-box" style="background:var(--success-light); border-color: #d1fae5;">
+                                <div class="stat-box" style="background:var(--success-light); border-color: var(--border);">
                                     <span class="stat-num" style="color:var(--success);" id="filtered-certified">0</span>
                                     <span class="stat-label">已認證</span>
                                 </div>
-                                <div class="stat-box" style="background:var(--danger-light); border-color: #fee2e2;">
+                                <div class="stat-box" style="background:var(--danger-light); border-color: var(--border);">
                                     <span class="stat-num" style="color:var(--danger);" id="filtered-failed">0</span>
                                     <span class="stat-label">待處理/失敗</span>
                                 </div>
                             </div>
                             
-                            <div style="margin-top:20px; padding:15px; background:#f1f5f9; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                            <div style="margin-top:20px; padding:15px; background:var(--bg-card); border-radius:var(--radius-sm); border:1px solid var(--border);">
                                 <h4 style="font-size:0.9em; margin-bottom:10px; color:var(--text-main);">篩選器</h4>
                                 
                                 <div class="input-group">
@@ -480,10 +745,9 @@
                         </div>
                     </div>
 
-                    <!-- 選項卡 4: 批量操作面板 -->
-                    <div id="tab-batch-action" class="hidden">
+                    <div id="tab-batch-action" class="hidden animate-panel-enter">
                         <h3>快速批次新增</h3>
-                        <div style="background:#f1f5f9; padding:20px; border-radius:var(--radius-sm); border:1px solid #e2e8f0; color:var(--text-secondary); margin-bottom:20px; font-size:0.9em;">
+                        <div style="background:var(--bg-input); padding:20px; border-radius:var(--radius-sm); border:1px solid var(--border); color:var(--text-secondary); margin-bottom:20px; font-size:0.9em;">
                             此功能使用規則生成器自動產生學號與帳號，適用於大量建立。
                         </div>
                         <button class="btn btn-primary" style="width:100%;" onclick="window.openBatchModal()">開啟設定視窗</button>
@@ -491,27 +755,22 @@
 
                 </div>
 
-                <!-- 右側列表區 -->
-                <div class="list-container">
+                <div class="list-container animate-panel-enter">
                     <h3 id="list-title" style="margin-bottom:16px;">學生列表</h3>
                     
-                    <!-- 認證總覽專用搜尋/過濾 -->
                     <div id="overview-search-container" class="hidden">
                         <label style="font-size:0.85em; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">關鍵字搜尋 (名稱 / 學生)</label>
                         <input type="text" id="overview-text-search" class="list-search" placeholder="輸入關鍵字進行搜尋..." oninput="renderGlobalList()">
                     </div>
                     
-                    <!-- 學生/團隊列表搜尋 -->
                     <input type="text" id="student-search" class="list-search" placeholder="🔍 搜尋學號或姓名..." onkeyup="window.filterStudentList()">
 
                     <div style="overflow-y:auto; max-height:600px; border:1px solid var(--border); border-radius:var(--radius-sm);">
                         <table id="main-table-display" class="data-table" style="margin:0; border:none;"></table>
                     </div>
                 </div>
-
             </div>
         </div>
-
     </div>
 
     <!-- 留言 Modal -->
@@ -520,7 +779,7 @@
             <span class="close-modal" onclick="window.closeModal('comment-modal')">&times;</span>
             <h3 id="modal-title">留言板</h3>
             <div id="comment-history" class="modal-body"></div>
-            <div id="new-comment-area" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; background:#f8fafc; padding:15px; border-radius:var(--radius-sm);">
+            <div id="new-comment-area" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; background:var(--bg-input); padding:15px; border-radius:var(--radius-sm);">
                 <textarea id="comment-input" rows="3" style="width:100%; margin-bottom:10px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px;" placeholder="輸入留言..."></textarea>
                 <button id="submit-comment-btn" class="btn btn-primary" style="width:100%;">送出留言</button>
             </div>
@@ -554,6 +813,10 @@
                             <option value="認證失敗">認證失敗</option>
                             <option value="已認證">已認證</option>
                         </select>
+                    </div>
+                    <div class="input-group">
+                        <label>活動說明 (僅限文字)</label>
+                        <textarea id="team-description" rows="4" placeholder="請輸入活動說明或規則..."></textarea>
                     </div>
                     
                     <div class="action-btn-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:20px;">
@@ -599,14 +862,14 @@
                     <code>[date]</code> : 日期。<code>[date]{yyyymmdd}</code> = 20260203<br>
                     <code>[time]</code> : 時間。<code>[time]{format=hhmm}</code> = 1330<br>
                     <code>[rand]</code> : 亂數。<code>[rand]{num=1}</code> = 0-9<br>
-                    <code>$text$</code> : 固定文字前綴
+                    <code>[student_num]</code> : 當前學號
                 </div>
 
                 <div class="input-group">
                     <label>生成數量 (起始 ~ 結束)</label>
-                    <div class="action-btn-group">
-                        <input type="number" id="batch-start" value="1" placeholder="起始" oninput="window.updatePreview()">
-                        <input type="number" id="batch-end" value="10" placeholder="結束" oninput="window.updatePreview()">
+                    <div class="batch-inputs-wrapper">
+                        <input type="number" id="batch-start" value="0" placeholder="起始" min="0" oninput="window.updatePreview()">
+                        <input type="number" id="batch-end" value="10" placeholder="結束" min="0" oninput="window.updatePreview()">
                     </div>
                 </div>
 
@@ -649,7 +912,7 @@
             <h3>確認新增資料 (Step 2/2)</h3>
             <p style="color:var(--text-secondary); margin-bottom:15px;">請確認資料。您可以直接修改表格內容。</p>
             
-            <div class="action-btn-group" style="background:#f8fafc; padding:15px; border-radius:var(--radius-sm); margin-bottom:15px;">
+            <div class="action-btn-group" style="background:var(--bg-input); padding:15px; border-radius:var(--radius-sm); margin-bottom:15px;">
                 <div style="flex:1;"><label style="font-size:0.8em; color:var(--text-secondary); display:block; margin-bottom:4px;">全校統一學校</label><input type="text" id="review-global-school" placeholder="輸入以更新全部..."></div>
                 <div style="flex:1;"><label style="font-size:0.8em; color:var(--text-secondary); display:block; margin-bottom:4px;">全班統一班級</label><input type="text" id="review-global-class" placeholder="輸入以更新全部..."></div>
             </div>
@@ -675,14 +938,11 @@
     <!-- JavaScript -->
     <script>
         // --- 設定區 ---
-        // 您的 Google Apps Script Web App URL
-        let GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzX2NDNurs4gE1LXQQfvEpo8_GnUv0qv9Fb5oUIK_c8BDkpcmyNBfeP-ofSZdk2S3MY/exec";
+        let GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWm2Hjbr72RqZnQDsmXlqGoQ4HbhMm31R_rGBGEjMXf9jsJ8E2Wl_XE_NYQMNhsz8D/exec";
 
-        const TEACHER_PASSWORD = 'Teacher@admin';
         const TEAMS_KEY = 'certSystem_teams';
         const STUDENTS_KEY = 'certSystem_students';
         
-        // 資料結構
         let students = {}; 
         let teams = {};
         let currentMode = 'student'; 
@@ -695,7 +955,7 @@
         let pendingBatchList = []; 
         let isSyncing = false;
 
-        // --- Google Sheet 同步邏輯 (修正 CORS 版本) ---
+        // --- Google Sheet 同步邏輯 ---
 
         async function fetchDataFromSheet() {
             if (!GOOGLE_SCRIPT_URL) {
@@ -706,9 +966,7 @@
                     teams = JSON.parse(localT);
                     showToast('已載入本地離線資料 (未設定 Google Sheet)', 'info');
                 } else {
-                    students = {
-                         'A123456789': { account: 'A123456789', name: '林書恩', school: '永靖高工', class: '資訊二', email: 'A123456789@stu.yjvs.chc.edu.tw', joinedTeams: [], tasks: [] }
-                    };
+                    students = {};
                     teams = {};
                     showToast('無資料庫連線，系統為離線模式', 'warning');
                 }
@@ -729,12 +987,10 @@
                 if (!response.ok) throw new Error('Network response was not ok');
                 
                 const text = await response.text();
-                // 處理可能出現的 Google JSON 包裝格式或直接 JSON
                 let data;
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    // 如果 GAS 返回的是純字串，可能需要特殊處理，但通常上述格式安全
                     throw new Error('解析 JSON 失敗: ' + text.substring(0,100));
                 }
                 
@@ -801,26 +1057,31 @@
                 }
             } catch (error) {
                 console.error('Save Error:', error);
-                throw error; // Re-throw to caller
+                throw error; 
             } finally {
                 setTimeout(() => { isSyncing = false; }, 1000);
             }
         }
 
         function showLoading(show) {
-            document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none';
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = show ? 'flex' : 'none';
+            if (show) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 500);
+            }
         }
 
-        // --- 工具函式 ---
         function generateTeamId() { return 'TEAM_' + new Date().getTime(); }
 
-        // 修正處理：強制轉為字串，解決 Number.toLowerCase 錯誤
         function maskEmail(e, accountId) { 
             if (!e) return '無';
             if (accountId) {
                 const parts = e.split('@');
-                const idStr = String(accountId).toLowerCase(); // 修正處理
-                
+                const idStr = String(accountId).toLowerCase(); 
                 if (parts.length === 2 && parts[0].toLowerCase() === idStr) return e;
             }
             const parts = e.split('@');
@@ -844,7 +1105,7 @@
             el.className = `toast ${type}`;
             el.innerText = msg;
             container.appendChild(el);
-            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+            setTimeout(() => { el.style.transform = 'translateY(20px)'; el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
         }
 
         window.showConfirmDialog = function(msg) {
@@ -866,14 +1127,22 @@
         window.showStudentLogin = function() {
             currentMode = 'student';
             window.hideAll();
-            document.getElementById('login-container').classList.remove('hidden');
+            const el = document.getElementById('login-container');
+            el.classList.remove('hidden');
             document.getElementById('login-error').classList.add('hidden');
+            el.classList.remove('animate-panel-enter');
+            void el.offsetWidth; // trigger reflow
+            el.classList.add('animate-panel-enter');
         }
 
         window.showAdminLogin = function() {
             window.hideAll();
-            document.getElementById('admin-login-container').classList.remove('hidden');
+            const el = document.getElementById('admin-login-container');
+            el.classList.remove('hidden');
             document.getElementById('admin-password').value = '';
+            el.classList.remove('animate-panel-enter');
+            void el.offsetWidth;
+            el.classList.add('animate-panel-enter');
         }
         
         window.switchAdminTab = function(tabName) {
@@ -882,11 +1151,21 @@
             if(activeBtn) activeBtn.classList.add('active');
             
             ['tab-student-action', 'tab-team-action', 'tab-overview-action', 'tab-batch-action'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            document.getElementById(`tab-${tabName}-action`).classList.remove('hidden');
+            
+            const targetPanel = document.getElementById(`tab-${tabName}-action`);
+            targetPanel.classList.remove('hidden');
+            targetPanel.classList.remove('animate-panel-enter');
+            void targetPanel.offsetWidth; 
+            targetPanel.classList.add('animate-panel-enter');
 
             const listTitle = document.getElementById('list-title');
             const studentSearch = document.getElementById('student-search');
             const overviewSearch = document.getElementById('overview-search-container');
+            const listContainer = document.querySelector('.list-container');
+
+            listContainer.classList.remove('animate-panel-enter');
+            void listContainer.offsetWidth;
+            listContainer.classList.add('animate-panel-enter');
 
             if(overviewSearch) overviewSearch.classList.add('hidden');
             if(studentSearch) studentSearch.classList.remove('hidden');
@@ -920,18 +1199,42 @@
             }
         });
 
-        document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+        document.getElementById('admin-login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (document.getElementById('admin-password').value === TEACHER_PASSWORD) {
-                currentMode = 'admin';
-                window.hideAll();
-                document.getElementById('admin-container').classList.remove('hidden');
-                window.switchAdminTab('student');
-                showWelcomePanel();
-            } else {
-                const err = document.getElementById('admin-login-error');
-                err.textContent = "密碼錯誤";
-                err.classList.remove('hidden');
+            const pwd = document.getElementById('admin-password').value;
+            
+            showLoading(true);
+            try {
+                const payload = { action: 'loginCheck', password: pwd };
+                const body = new URLSearchParams();
+                body.append('data', JSON.stringify(payload));
+
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: body
+                });
+
+                if (!response.ok) throw new Error('Network error');
+                
+                const result = await response.json();
+
+                if (result.result === 'success') {
+                    currentMode = 'admin';
+                    window.hideAll();
+                    const el = document.getElementById('admin-container');
+                    el.classList.remove('hidden');
+                    window.switchAdminTab('student');
+                    showWelcomePanel();
+                } else {
+                    const err = document.getElementById('admin-login-error');
+                    err.textContent = "密碼錯誤";
+                    err.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Admin Login Error:', error);
+                showToast('連線失敗，請檢查網路', 'error');
+            } finally {
+                showLoading(false);
             }
         });
 
@@ -939,7 +1242,12 @@
             currentMode = 'student';
             viewingAccountId = s.account; 
             window.hideAll();
-            document.getElementById('result-container').classList.remove('hidden');
+            const el = document.getElementById('result-container');
+            el.classList.remove('hidden');
+            el.classList.remove('animate-panel-enter');
+            void el.offsetWidth;
+            el.classList.add('animate-panel-enter');
+
             document.getElementById('result-account').textContent = s.account;
             document.getElementById('result-name').textContent = maskName(s.name); 
             document.getElementById('result-school').textContent = s.school;
@@ -958,7 +1266,9 @@
                     <td style="text-align:right;"></td>`;
                 const td = tr.cells[2];
                 const visibleCount = (t.comments || []).filter(c => !c.isRecalled).length;
-                let btns = `<span class="action-btn-group"><button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${s.account}', ${t.id}, 'student', false)">留言 (${visibleCount})</button>`;
+                let btns = `<span class="action-btn-group">
+                    <button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${s.account}', ${t.id}, 'student', false)">留言 (${visibleCount})</button>
+                `;
                 if (t.status === '未完成' || t.status === '認證失敗') {
                     btns += ` <button class="btn btn-primary btn-small" onclick="window.reqCert('${s.account}', ${t.id}, false)">請求認證</button>`;
                 } else if (t.status === '已認證') {
@@ -971,7 +1281,7 @@
             const myTeams = (s.joinedTeams || []).filter(tid => teams[tid]);
             if (myTeams.length > 0) {
                 const sepRow = tbody.insertRow();
-                sepRow.innerHTML = `<td colspan="3" style="background:#f8fafc; text-align:center; color:var(--text-secondary); font-weight:600; padding:12px;">- 團隊活動 -</td>`;
+                sepRow.innerHTML = `<td colspan="3" style="background:var(--bg-body); text-align:center; color:var(--text-secondary); font-weight:600; padding:12px;">- 團隊活動 -</td>`;
                 myTeams.forEach(tid => {
                     const t = teams[tid];
                     const tr = tbody.insertRow();
@@ -981,7 +1291,9 @@
                         <td style="text-align:right;"></td>`;
                     const td = tr.cells[2];
                     const visibleCount = (t.comments || []).filter(c => !c.isRecalled).length;
-                    let btns = `<span class="action-btn-group"><button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${tid}', 0, 'student', true)">留言 (${visibleCount})</button>`;
+                    let btns = `<span class="action-btn-group">
+                        <button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${tid}', 0, 'student', true)">留言 (${visibleCount})</button>
+                    `;
                     if (t.status === '未完成' || t.status === '認證失敗') {
                         btns += ` <button class="btn btn-primary btn-small" onclick="window.reqCert('${tid}', 0, true)">請求團隊認證</button>`;
                     } else if (t.status === '已認證') {
@@ -993,10 +1305,71 @@
             }
         }
 
-        window.logout = () => { window.showToast('已登出'); window.showStudentLogin(); }
-        window.adminLogout = () => { window.showToast('已登出'); window.showStudentLogin(); }
+        // 登出邏輯 with Typewriter Animation (OPUS only)
+        window.logout = async function() {
+            const isOpus = document.body.getAttribute('data-theme') === 'opus';
+            
+            // 隱藏當前視圖
+            document.getElementById('result-container').classList.add('hidden');
+            document.getElementById('admin-container').classList.add('hidden');
 
-        // 修正：加入 Loading 遮罩控制
+            const overlay = document.getElementById('logout-overlay');
+            overlay.style.display = 'flex';
+            
+            // 先顯示黑色背景
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.opacity = '1', 10);
+
+            if (isOpus) {
+                // OPUS 模式：打字機特效
+                const textEl = document.querySelector('.typewriter-text');
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor';
+                textEl.innerHTML = '';
+                textEl.appendChild(cursor);
+
+                const str = "See you next time";
+                let i = 0;
+                
+                function typeChar() {
+                    if (i < str.length) {
+                        const span = document.createElement('span');
+                        span.textContent = str.charAt(i);
+                        span.style.opacity = 0;
+                        textEl.insertBefore(span, cursor);
+                        setTimeout(() => span.style.opacity = 1, 20); 
+                        i++;
+                        setTimeout(typeChar, 100);
+                    } else {
+                        // 全部打完，延遲後回到登入
+                        setTimeout(() => {
+                            overlay.style.opacity = 0;
+                            setTimeout(() => {
+                                overlay.style.display = 'none';
+                                overlay.style.opacity = 1;
+                                window.showToast('已登出'); 
+                                window.showStudentLogin();
+                            }, 500);
+                        }, 2000);
+                    }
+                }
+                setTimeout(typeChar, 500); // 稍微延遲開始打字
+            } else {
+                // 普通模式：簡單的淡出
+                setTimeout(() => {
+                    overlay.style.opacity = 0;
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        overlay.style.opacity = 1;
+                        window.showToast('已登出'); 
+                        window.showStudentLogin();
+                    }, 500);
+                }, 1000);
+            }
+        }
+        
+        window.adminLogout = () => { window.logout(); }
+
         window.reqCert = async function(id, tid, isTeam) {
             if (await window.showConfirmDialog('確定申請認證？')) {
                 showLoading(true);
@@ -1062,12 +1435,23 @@
                 document.getElementById('admin-welcome-panel').classList.remove('hidden');
                 document.getElementById('student-form-panel').classList.add('hidden');
             }
+            
+            const el = document.getElementById('admin-welcome-panel');
+            el.classList.remove('animate-panel-enter');
+            void el.offsetWidth;
+            el.classList.add('animate-panel-enter');
         }
 
         window.showStudentForm = function(mode) {
             document.getElementById('admin-welcome-panel').classList.add('hidden');
             document.getElementById('student-form-panel').classList.remove('hidden');
+            
             if (mode === 'new') window.switchToNewStudentMode(false);
+
+            const el = document.getElementById('student-form-panel');
+            el.classList.remove('animate-panel-enter');
+            void el.offsetWidth;
+            el.classList.add('animate-panel-enter');
         }
 
         window.switchToNewStudentMode = async function(confirmIt = true) {
@@ -1087,6 +1471,11 @@
         }
 
         window.editStudent = function(id) {
+            const studentTab = document.getElementById('tab-student-action');
+            if (studentTab.classList.contains('hidden')) {
+                window.switchAdminTab('student');
+            }
+
             const s = students[id];
             editingStudentId = id;
             document.getElementById('admin-welcome-panel').classList.add('hidden');
@@ -1104,6 +1493,11 @@
             const tbody = document.querySelector('#tasks-table-admin tbody');
             tbody.innerHTML = '';
             (s.tasks || []).forEach(t => addTaskRow(t));
+            
+            const el = document.getElementById('student-form-panel');
+            el.classList.remove('animate-panel-enter');
+            void el.offsetWidth;
+            el.classList.add('animate-panel-enter');
         }
 
         window.addTaskRow = function(task=null) {
@@ -1116,23 +1510,24 @@
             const status = task ? task.status : '未完成';
             const comments = task ? task.comments : [];
             const commentCount = comments.filter(c=>!c.isRecalled).length;
-            
+
             tr.innerHTML = `
-                <td><input type="text" class="task-name" value="${name}" placeholder="項目名稱" required style="border:none; background:transparent; font-weight:500; width:95%;"></td>
+                <td><input type="text" class="task-name" value="${name}" placeholder="項目名稱" required style="border:none; background:transparent; font-weight:500; width:85%;"></td>
                 <td>
-                    <select class="task-status" style="width:95%; border:1px solid var(--border); border-radius:4px; font-size:0.8em;">
+                    <select class="task-status" style="width:90%; border:1px solid var(--border); border-radius:4px; font-size:0.8em;">
                         <option value="未完成" ${status=='未完成'?'selected':''}>未完成</option>
                         <option value="審核中" ${status=='審核中'?'selected':''}>審核中</option>
                         <option value="認證失敗" ${status=='認證失敗'?'selected':''}>失敗</option>
                         <option value="已認證" ${status=='已認證'?'selected':''}>已認證</option>
                     </select>
                 </td>
-                <td style="text-align:center;"><button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${editingStudentId||''}', ${tid}, 'admin', false)" ${!editingStudentId?'disabled':''}>💬${commentCount}</button></td>
+                <td style="text-align:center;">
+                    <button class="btn btn-secondary btn-small" onclick="window.openCommentModal('${editingStudentId||''}', ${tid}, 'admin', false)" ${!editingStudentId?'disabled':''}>💬${commentCount}</button>
+                </td>
                 <td style="text-align:center; width:10px;"><button class="btn btn-danger btn-small" style="padding:2px 6px; font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>
             `;
         }
 
-        // 修正：加入 try...finally 確保遮罩關閉
         document.getElementById('student-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             showLoading(true);
@@ -1152,7 +1547,6 @@
                     tasks.push({
                         id: tid, name: r.querySelector('.task-name').value.trim(),
                         status: r.querySelector('.task-status').value,
-                        teacherComment: existingTask ? existingTask.teacherComment : '無',
                         comments: existingTask ? existingTask.comments : []
                     });
                 });
@@ -1177,7 +1571,6 @@
             }
         });
 
-        // 修正：加入 try...finally
         window.delStudent = async function(id) {
             if (!await window.showConfirmDialog('確定刪除？')) return;
             showLoading(true);
@@ -1196,6 +1589,7 @@
             }
         }
 
+        // --- 團隊相關邏輯 ---
         function renderTeamList() {
             const table = document.getElementById('main-table-display');
             const keys = Object.keys(teams);
@@ -1214,7 +1608,7 @@
                         <div style="font-weight:600; margin-bottom:4px;">${t.name}</div>
                         <div style="font-size:0.8em; color:var(--text-secondary);">狀態: ${t.status}</div>
                     </td>
-                    <td>${t.joinMode==='open'?'<span class="badge" style="background:#ecfdf5; color:#10b981;">開放</span>':'<span class="badge" style="background:#fff7ed; color:#f59e0b;">限制</span>'}</td>
+                    <td>${t.joinMode==='open'?'<span class="badge" style="background:var(--success-light); color:var(--success);">開放</span>':'<span class="badge" style="background:var(--warning-light); color:var(--warning);">限制</span>'}</td>
                     <td style="text-align:center; font-weight:600;">${(t.members||[]).length}</td>
                     <td style="text-align:right;">
                         <div class="action-btn-group" style="justify-content:flex-end;">
@@ -1240,6 +1634,7 @@
                 document.getElementById('team-edit-id').value = t.id;
                 document.getElementById('team-join-mode').value = t.joinMode;
                 document.getElementById('team-status').value = t.status;
+                document.getElementById('team-description').value = t.description ? t.description : "";
                 delBtn.classList.remove('hidden');
                 delBtn.onclick = async () => { await window.delTeam(teamId); window.closeModal('team-modal'); };
             } else {
@@ -1248,12 +1643,12 @@
                 document.getElementById('team-name').value = '';
                 document.getElementById('team-join-mode').value = 'open';
                 document.getElementById('team-status').value = '未完成';
+                document.getElementById('team-description').value = "";
                 delBtn.classList.add('hidden');
             }
             renderTeamMembers();
         }
 
-        // 修正：加入 try...finally
         document.getElementById('team-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             showLoading(true);
@@ -1263,8 +1658,11 @@
                 
                 teams[id] = {
                     id: id, name: document.getElementById('team-name').value.trim(),
-                    status: document.getElementById('team-status').value, joinMode: document.getElementById('team-join-mode').value,
-                    members:isNew ? [] : teams[id].members, comments: isNew ? [] : teams[id].comments
+                    status: document.getElementById('team-status').value, 
+                    joinMode: document.getElementById('team-join-mode').value,
+                    description: document.getElementById('team-description').value.trim(),
+                    members:isNew ? [] : teams[id].members, 
+                    comments: isNew ? [] : teams[id].comments
                 };
                 await pushDataToSheet();
                 renderTeamList();
@@ -1278,7 +1676,6 @@
             }
         });
 
-        // 修正：加入 try...finally
         window.delTeam = async function(id) {
             if (await window.showConfirmDialog('確定刪除此活動？成員將會被移除。')) {
                 showLoading(true);
@@ -1317,7 +1714,6 @@
             });
         }
 
-        // 修正：加入 try...finally
         window.addMemberToTeam = async function() {
             if (!editingTeamId) return;
             const input = document.getElementById('team-add-member-input');
@@ -1346,7 +1742,6 @@
             }
         }
 
-        // 修正：加入 try...finally
         window.removeMember = async function(mid) {
             if (!confirm(`確定移除 ${mid}?`)) return;
             showLoading(true);
@@ -1396,7 +1791,6 @@
             modal.style.display = 'flex';
         }
 
-        // 修正：加入 try...finally
         window.joinTeam = async function(tid) {
             const t = teams[tid];
             const sid = viewingAccountId;
@@ -1522,8 +1916,44 @@
             });
         }
 
-        // 修正：加入 loading 機制於留言送出
-        window.openCommentModal = function(itemId, taskId, mode, isTeam) {
+        function simulateProgressBar(duration) {
+            return new Promise(resolve => {
+                const barFill = document.getElementById('comment-history');
+                const originalContent = barFill.innerHTML;
+                
+                barFill.innerHTML = `
+                    <div class="progress-container">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="anim-fill" style="width:0%"></div>
+                        </div>
+                        <div class="progress-text" id="anim-text">DECRYPTING DATA...</div>
+                    </div>
+                `;
+
+                const fill = document.getElementById('anim-fill');
+                const txt = document.getElementById('anim-text');
+                const steps = ['CONNECTING', 'FETCHING', 'DECRYPTING', 'DONE'];
+                let width = 0;
+                let stepIndex = 0;
+
+                const interval = setInterval(() => {
+                    width += 2; 
+                    fill.style.width = width + '%';
+                    
+                    if (width > (stepIndex + 1) * 25) {
+                        stepIndex++;
+                        if(stepIndex < steps.length) txt.innerText = steps[stepIndex];
+                    }
+
+                    if (width >= 100) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, duration / 50);
+            });
+        }
+
+        window.openCommentModal = async function(itemId, taskId, mode, isTeam) {
             viewingAccountId = itemId; viewingTaskId = taskId; currentMode = mode; viewingIsTeam = isTeam;
             let comments = []; let taskName = '';
             
@@ -1531,6 +1961,11 @@
             else { const s = students[itemId]; const task = (s.tasks||[]).find(x=>x.id==taskId); if(!task) return; taskName = task.name; comments = task.comments || []; }
 
             document.getElementById('modal-title').innerText = `留言板: ${taskName}`;
+            const modal = document.getElementById('comment-modal');
+            modal.style.display = 'flex';
+            
+            await simulateProgressBar(1000); 
+
             renderCommentHistory(comments, mode, isTeam);
             const submitBtn = document.getElementById('submit-comment-btn');
             const inputArea = document.getElementById('comment-input');
@@ -1568,7 +2003,6 @@
                     showLoading(false);
                 }
             };
-            document.getElementById('comment-modal').style.display = 'flex';
         }
 
         function renderCommentHistory(comments, viewMode, isTeam) {
@@ -1593,7 +2027,6 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // 修正：加入 loading 機制於留言撤回
         window.handleCommentAction = async function(index, action, isTeam) {
             if (action === 'recall' && !await window.showConfirmDialog('確定要撤回這則留言嗎？')) return;
             showLoading(true);
@@ -1627,23 +2060,23 @@
             a.click();
         }
 
-        // 批量相關功能
+        // --- Q語法規則解析與批次生成邏輯 ---
         function parseParams(paramString) {
             const params = {};
             if (!paramString) return params;
             let cleanStr = paramString.replace(/，/g, ',').replace(/；/g, ';').replace(/｛/g, '{').replace(/｝/g, '}').replace(/^\{|\}$/g, '');
             try {
                 const items = cleanStr.split(/[,;]/); 
-                items.forEach(item => {
+                for(let item of items) {
                     let p = item.trim();
-                    if (!p) return;
+                    if (!p) continue;
                     if (p.includes('=')) {
                         const idx = p.indexOf('=');
                         const k = p.substring(0, idx).trim();
                         const v = p.substring(idx + 1).trim();
                         if (v.includes(',')) { params[k] = v.split(',').map(s => s.trim()); } else { params[k] = v; }
                     } else { params[p] = true; }
-                });
+                }
             } catch(e) { console.error("Parse Error", e); }
             return params;
         }
@@ -1676,7 +2109,7 @@
             const rule = document.getElementById('batch-rule-account').value;
             const previewEl = document.getElementById('batch-preview');
             if (!rule.trim()) { previewEl.textContent = '請輸入學號規則'; return; }
-            if (isNaN(startInput)) { previewEl.textContent = '起始錯誤'; return; }
+            if (isNaN(startInput) || startInput < 0) { previewEl.textContent = '起始錯誤 (需大於0)'; return; }
             let html = '';
             for (let i = 0; i < 3; i++) {
                 const ctx = { ruleIndex: i+1, baseNum: startInput + i, studentNum: '' };
@@ -1694,7 +2127,7 @@
             const ruleAccount = document.getElementById('batch-rule-account').value;
             let ruleEmail = document.getElementById('batch-rule-email').value.trim();
 
-            if (isNaN(startInput) || isNaN(endInput) || startInput > endInput) { window.showToast('號碼範圍錯誤', 'error'); return; }
+            if (isNaN(startInput) || isNaN(endInput) || startInput < 0 || endInput < 0 || startInput > endInput) { window.showToast('號碼範圍錯誤 (需大於等於0)', 'error'); return; }
             if (!ruleAccount) { window.showToast('請輸入學號規則', 'error'); return; }
             let notList = [];
             const numParamsMatch = ruleAccount.match(/\[number\](?:\{([^\}]*)\})?/);
@@ -1752,7 +2185,6 @@
             if(e.target.tagName === 'INPUT') { const idx = e.target.dataset.idx; const field = e.target.dataset.field; pendingBatchList[idx][field] = e.target.value; }
         });
 
-        // 修正：加入 try...finally
         window.finalizeBatchAdd = async function() {
             if (pendingBatchList.length === 0) { window.showToast('沒有資料可儲存', 'error'); return; }
             if (!await window.showConfirmDialog(`確定新增 ${pendingBatchList.length} 筆學生資料？`)) return;
@@ -1779,9 +2211,41 @@
         }
         window.openBatchModal = function() { document.getElementById('batch-modal').style.display = 'flex'; window.updatePreview(); }
 
-        // --- 初始化 ---
         window.onload = async function() {
             await fetchDataFromSheet();
+            initTheme();
+        }
+
+        // --- 主題切換系統 ---
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'default';
+            setTheme(savedTheme);
+            document.getElementById('theme-toggle-btn').addEventListener('click', cycleTheme);
+        }
+
+        function setTheme(themeName) {
+            const body = document.body;
+            const themes = ['default', 'dark', 'opus'];
+            const validTheme = themes.includes(themeName) ? themeName : 'default';
+
+            body.removeAttribute('data-theme');
+
+            if (validTheme !== 'default') {
+                body.setAttribute('data-theme', validTheme);
+            }
+
+            localStorage.setItem('theme', validTheme);
+        }
+
+        function cycleTheme() {
+            const themes = ['default', 'dark', 'opus'];
+            const currentTheme = localStorage.getItem('theme') || 'default';
+            const currentIndex = themes.indexOf(currentTheme);
+            const nextIndex = (currentIndex + 1) % themes.length;
+            setTheme(themes[nextIndex]);
+            
+            const themeNames = { 'default': '淺色主題', 'dark': '深色主題', 'opus': 'OPUS 風格' };
+            showToast(`已切換至: ${themeNames[themes[nextIndex]]}`, 'info');
         }
 
     </script>
